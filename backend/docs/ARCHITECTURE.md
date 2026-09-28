@@ -43,12 +43,26 @@ candidate frontend ──POST /api/assess──▶ api_server.py
 
 ## 2. LLM layer (premium)
 
-`ClaudeInterpreter` makes two kinds of call, both returning JSON constrained by a schema (`output_config.format`):
+### Providers
+
+`llm_providers.py` gives every provider the same interface (`generate_json(system, prompt, schema)` and `list_models()`):
+
+- **Anthropic (Claude)** uses the official SDK with schema-constrained output (`output_config.format`), effort control, and server-side refusal fallback on Opus 5-tier models.
+- **Every other provider** (NVIDIA NIM, OpenAI, Gemini, Groq, Mistral, DeepSeek, Together, OpenRouter, Fireworks, xAI, Perplexity, Ollama, custom) goes through one OpenAI-compatible Chat Completions adapter. It asks for JSON mode and silently retries without it if the endpoint doesn't support it. It then strips code fences and `<think>` reasoning traces, and validates the reply against the schema. A reply that fails validation is treated like any other failure and falls back.
+
+The active provider comes from the dashboard (stored encrypted in `llm_settings`) or, failing that, from environment variables. `LLMInterpreter.set_provider()` swaps it at runtime. Each worker checks the settings row's timestamp before LLM work, so every worker picks up a change without a restart.
+
+### Calls
+
+`LLMInterpreter` makes three kinds of call:
 
 | Call | Input sent to Claude | Cache key | Distinct keys |
 |---|---|---|---|
 | Dimension insight | dimension, category, level, pre-written interpretation | `(dimension, level)` | 33 in total |
 | Profile narrative | the 11 levels (no Sten numbers) | the level vector | grows with unique profiles |
+| Cohort analysis | per-dimension means and level percentages across all candidates | the aggregate | one per data change |
+
+Cache keys include the provider and model, so switching provider never serves another model's text.
 
 **Privacy.** Names, emails, ids and raw answers are never sent. Only levels are sent (not exact Stens), so a cached narrative is correct for every candidate sharing that level vector.
 
@@ -56,7 +70,7 @@ candidate frontend ──POST /api/assess──▶ api_server.py
 
 **Fallback.** On a missing key, auth failure, rate limit, connection error, 5xx, refusal, truncation or invalid JSON, the report uses the pre-written interpretation and generic actions (`content_source: "fallback"` or `"mixed"`). Failed generations are never cached.
 
-**Request shape.** The model is `claude-opus-5` by default (configurable). Effort defaults to `medium`. Thinking is left at the model default (adaptive). Server-side refusal fallback is enabled (`fallbacks: "default"`, beta `server-side-fallback-2026-07-01`; turn off with `LLM_USE_FALLBACKS=false` on platforms without it). The SDK retries 429s and 5xx twice before the app falls back.
+**Request shape (Claude).** The model is `claude-opus-5` by default (configurable). Effort defaults to `medium`. Thinking is left at the model default (adaptive). Server-side refusal fallback is enabled (`fallbacks: "default"`, beta `server-side-fallback-2026-07-01`; turn off with `LLM_USE_FALLBACKS=false` on platforms without it). The SDK retries 429s and 5xx twice before the app falls back.
 
 ## 3. Persistence
 
@@ -67,6 +81,7 @@ candidate frontend ──POST /api/assess──▶ api_server.py
 | `responses` | Fernet-encrypted answers + SHA-256 digest (integrity, duplicate detection) |
 | `results` | one row per dimension (raw, proportion, Sten, level, percentile) for analytics and norms |
 | `llm_cache` | generated text keyed as above, with hit counts |
+| `llm_settings` | provider chosen in the dashboard: provider, model, base URL, Fernet-encrypted API key, last-4 hint, optional prices |
 
 Raw answers are never logged, and never stored unencrypted. In production, `RESPONSE_ENCRYPTION_KEY` must be set. In development, a key is generated at `data/.dev_encryption_key` (gitignored).
 

@@ -73,13 +73,14 @@ Returns the full report with `premium_features`:
   "coaching_insights": ["…"],
   "dimension_insights": { "Networking": "…" },
   "content_source": "llm",
+  "generated_by": { "provider": "nvidia", "provider_label": "NVIDIA NIM", "model": "meta/llama-3.3-70b-instruct", "source": "dashboard" },
   "api_calls_made": 1,
   "estimated_cost_usd": 0.0243,
   "generation_time_ms": 3100
 }
 ```
 
-`content_source` is `llm`, `fallback` (pre-written text; no key, or Claude unavailable) or `mixed`. The endpoint returns `409` if the assessment is incomplete.
+`content_source` is `llm`, `fallback` (pre-written text; no provider configured, or it was unavailable) or `mixed`. The endpoint returns `409` if the assessment is incomplete.
 
 ## POST /api/export/{test_id}?format=pdf|json|text  🔒
 
@@ -101,6 +102,32 @@ The dashboard at `GET /admin` renders this data. It asks for the admin key and k
 ## GET /api/norms/suggested?min_sample=30  🔒
 
 Computes norms from stored genuine, completed assessments. Save the JSON to `data/norms.json` (or `NORMS_PATH`) and restart to use them. Returns `409` if there aren't enough assessments yet.
+
+## AI provider settings  🔒
+
+These endpoints back the **AI provider** card in the dashboard.
+
+| Method & path | Purpose |
+|---|---|
+| `GET /api/admin/llm` | Current provider (`provider`, `model`, `source`: `dashboard` / `environment` / `none`, `key_hint` like `…1234`) plus the provider catalog. The key itself is never returned |
+| `POST /api/admin/llm/models` | `{provider, api_key?, base_url?}` returns `{models: [...]}`, listed live from the provider |
+| `PUT /api/admin/llm` | `{provider, model, api_key?, base_url?, input_price_per_mtok?, output_price_per_mtok?, test=true}`. Makes a tiny test call, then saves. On a failed test it returns `400 "Connection test failed: …"` and saves nothing. Omit `api_key` to keep the stored key (same provider and base URL only); omit prices to keep stored prices |
+| `DELETE /api/admin/llm` | Deletes the saved provider and key, and reverts to the environment configuration |
+
+Example (NVIDIA NIM):
+
+```bash
+curl -X PUT localhost:8000/api/admin/llm -H "X-API-Key: $ADMIN_API_KEY" -H 'Content-Type: application/json' \
+  -d '{"provider": "nvidia", "api_key": "nvapi-…", "model": "meta/llama-3.3-70b-instruct"}'
+```
+
+## GET /api/admin/assessments?limit=50&offset=0  🔒
+
+Recent assessments for the dashboard: id, candidate, date, status, quality, strengths, and whether an AI report exists.
+
+## POST /api/admin/cohort-analysis  🔒
+
+AI analysis of **aggregated** results across all candidates. Only per-dimension means and level percentages are sent, never individual data. Returns `{summary, observations[], recommendations[], content_source, generated_by, candidates, api_calls_made}`. The result is cached until the data changes. Returns `409` when there are no assessments yet.
 
 ## GET /api/questions
 

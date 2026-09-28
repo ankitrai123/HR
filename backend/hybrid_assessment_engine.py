@@ -41,6 +41,7 @@ from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping, Protocol
 
 from config import Settings, settings as default_settings
+from llm_providers import AnthropicProvider, LLMProvider, LLMUnavailable, provider_from_env
 
 log = logging.getLogger("assessment.engine")
 
@@ -457,10 +458,6 @@ class LLMInterpretationCache:
 # ---------------------------------------------------------------------------
 
 
-class LLMUnavailable(RuntimeError):
-    """Raised when the LLM can't produce text; callers fall back."""
-
-
 SYSTEM_PROMPT = """You are an experienced occupational psychologist writing feedback for a workplace personality assessment.
 
 The assessment measures 11 competency dimensions on Sten scores, grouped into three levels: Low (Sten 1-4), Moderate (5-6), High (7-10). Scores describe self-reported preferences relative to a norm group; they are not measures of ability, and neither end of a scale is "bad".
@@ -491,6 +488,22 @@ PROFILE_SCHEMA = {
 }
 
 
+COHORT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "summary": {"type": "string", "description": "A 100-150 word overview of the group."},
+        "observations": {"type": "array", "items": {"type": "string"}},
+        "recommendations": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["summary", "observations", "recommendations"],
+    "additionalProperties": False,
+}
+
+COHORT_SYSTEM_PROMPT = """You are an experienced occupational psychologist advising a hiring team on aggregated personality assessment results.
+
+Scores are Sten scores (1-10) on 11 competency dimensions; levels are Low (1-4), Moderate (5-6) and High (7-10). Describe group-level patterns only; never speculate about individuals, protected characteristics or clinical conditions, and do not recommend hiring or rejecting anyone. Write in plain, professional British English."""
+
+
 @dataclass
 class UsageTracker:
     api_calls: int = 0
@@ -510,90 +523,63 @@ class UsageTracker:
             self.failures += 1
 
 
-class ClaudeInterpreter:
-    """Generates personalised text with the Anthropic Messages API.
+class LLMInterpreter:
+    """Generates personalised text through the configured LLM provider
+    (Claude, NVIDIA NIM, OpenAI, Gemini, ... see llm_providers.py).
 
     Only non-identifying data is sent: dimension names, levels and the
     pre-written interpretation. Candidate names, emails and raw item
     responses never leave the service.
     """
 
-    FALLBACK_BETA = "server-side-fallback-2026-07-01"
-
-    def __init__(self, cfg: Settings = default_settings, client: Any = None):
+    def __init__(self, cfg: Settings = default_settings, provider: LLMProvider | None = None, client: Any = None,
+                 input_price_per_mtok: float | None = None, output_price_per_mtok: float | None = None):
         self.cfg = cfg
         self.usage = UsageTracker()
-        self._client = client
+        if provider is None and client is not None:
+            provider = AnthropicProvider(cfg, client=client)  # injected SDK client (tests)
+        self.provider = provider if provider is not None else provider_from_env(cfg)
+        self.source = "environment" if self.provider is not None else "none"
+        self.input_price = cfg.llm_input_price_per_mtok if input_price_per_mtok is None else input_price_per_mtok
+        self.output_price = cfg.llm_output_price_per_mtok if output_price_per_mtok is None else output_price_per_mtok
+        self._lock = threading.Lock()
+
+    def set_provider(self, provider: LLMProvider | None, source: str,
+                     input_price_per_mtok: float | None = None, output_price_per_mtok: float | None = None) -> None:
+        """Hot-swap the provider (e.g. after an admin saves a new API key)."""
+        with self._lock:
+            self.provider = provider
+            self.source = source if provider is not None else "none"
+            self.input_price = input_price_per_mtok or 0.0
+            self.output_price = output_price_per_mtok or 0.0
 
     @property
     def available(self) -> bool:
-        return self._client is not None or self.cfg.llm_available
+        return self.provider is not None
 
     @property
-    def client(self) -> Any:
-        if self._client is None:
-            if not self.cfg.llm_available:
-                raise LLMUnavailable("LLM disabled or ANTHROPIC_API_KEY not set")
-            import anthropic
+    def cache_model_id(self) -> str:
+        return self.provider.cache_id if self.provider else "none"
 
-            self._client = anthropic.Anthropic(api_key=self.cfg.anthropic_api_key,
-                                               timeout=self.cfg.llm_timeout_seconds, max_retries=2)
-        return self._client
+    def describe(self) -> dict[str, Any]:
+        p = self.provider
+        return {"available": p is not None, "provider": p.id if p else None,
+                "provider_label": p.spec.label if p else None, "model": p.model if p else None,
+                "source": self.source}
 
-    @staticmethod
-    def supports_effort(model: str) -> bool:
-        # Haiku 4.5 rejects the effort parameter.
-        return not model.startswith("claude-haiku")
-
-    @staticmethod
-    def supports_server_fallback(model: str) -> bool:
-        # Server-side refusal fallback is offered on the Opus 5 / Fable tier.
-        return model.startswith(("claude-opus-5", "claude-fable", "claude-mythos"))
-
-    def _call(self, prompt: str, schema: dict[str, Any]) -> dict[str, Any]:
-        import anthropic
-
-        model = self.cfg.llm_model
-        output_config: dict[str, Any] = {"format": {"type": "json_schema", "schema": schema}}
-        if self.supports_effort(model):
-            output_config["effort"] = self.cfg.llm_effort
-        kwargs: dict[str, Any] = dict(
-            model=model,
-            max_tokens=self.cfg.llm_max_tokens,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": prompt}],
-            output_config=output_config,
-        )
-        if self.cfg.llm_use_fallbacks and self.supports_server_fallback(model):
-            kwargs.update(betas=[self.FALLBACK_BETA], fallbacks="default")
+    def _call(self, prompt: str, schema: dict[str, Any], system: str = SYSTEM_PROMPT) -> dict[str, Any]:
+        provider = self.provider
+        if provider is None:
+            raise LLMUnavailable("no LLM provider configured")
         try:
-            response = self.client.beta.messages.create(**kwargs)
-        except anthropic.AuthenticationError as exc:
+            result = provider.generate_json(system, prompt, schema)
+        except LLMUnavailable as exc:
             self.usage.record_failure()
-            raise LLMUnavailable("Anthropic API rejected the API key") from exc
-        except anthropic.RateLimitError as exc:
-            self.usage.record_failure()
-            raise LLMUnavailable("Anthropic API rate limit reached") from exc
-        except anthropic.APIStatusError as exc:
-            self.usage.record_failure()
-            raise LLMUnavailable(f"Anthropic API error {exc.status_code}") from exc
-        except anthropic.APIConnectionError as exc:
-            self.usage.record_failure()
-            raise LLMUnavailable("could not reach the Anthropic API") from exc
-
-        usage = getattr(response, "usage", None)
-        self.usage.record(getattr(usage, "input_tokens", 0) or 0, getattr(usage, "output_tokens", 0) or 0)
-        if response.stop_reason == "refusal":
-            raise LLMUnavailable("model declined the request")
-        if response.stop_reason == "max_tokens":
-            raise LLMUnavailable("response truncated at max_tokens")
-        text = next((b.text for b in response.content if b.type == "text"), None)
-        if not text:
-            raise LLMUnavailable("empty response")
-        try:
-            return json.loads(text)
-        except json.JSONDecodeError as exc:
-            raise LLMUnavailable("response was not valid JSON") from exc
+            if exc.result is not None:
+                self.usage.record(exc.result.input_tokens, exc.result.output_tokens)
+            raise
+        self.usage.record(result.input_tokens, result.output_tokens)
+        return result.data
 
     def dimension_insight(self, dimension: str, category: str, level: str) -> dict[str, Any]:
         prompt = (
@@ -615,10 +601,24 @@ class ClaudeInterpreter:
         )
         return self._call(prompt, PROFILE_SCHEMA)
 
+    def cohort_analysis(self, summary: Mapping[str, Any]) -> dict[str, Any]:
+        prompt = (
+            "Below are aggregated, anonymised results for a group of candidates (no individual data).\n"
+            f"{json.dumps(summary, indent=1, sort_keys=True)}\n\n"
+            "Write a short analysis for the hiring team: an overall summary, 3-5 notable observations "
+            "about the group's strengths and gaps, and 3-5 practical recommendations (e.g. onboarding, "
+            "training, team composition). If the norms or scoring key are provisional, say that the "
+            "patterns are indicative only."
+        )
+        return self._call(prompt, COHORT_SCHEMA, system=COHORT_SYSTEM_PROMPT)
+
     def estimated_cost_usd(self) -> float:
-        cfg = self.cfg
-        return round(self.usage.input_tokens / 1e6 * cfg.llm_input_price_per_mtok
-                     + self.usage.output_tokens / 1e6 * cfg.llm_output_price_per_mtok, 6)
+        return round(self.usage.input_tokens / 1e6 * self.input_price
+                     + self.usage.output_tokens / 1e6 * self.output_price, 6)
+
+
+# Backwards-compatible name: ClaudeInterpreter(cfg, client=anthropic_client).
+ClaudeInterpreter = LLMInterpreter
 
 
 # ---------------------------------------------------------------------------
@@ -753,6 +753,7 @@ class HybridReportGenerator:
             "coaching_insights": narrative["coaching_insights"] + [insights[d]["coaching_insight"] for d in focus],
             "dimension_insights": {d: v["interpretation"] for d, v in insights.items()},
             "content_source": "llm" if sources == {"llm"} else "fallback" if sources == {"fallback"} else "mixed",
+            "generated_by": self.interpreter.describe() if "llm" in sources else None,
             "api_calls_made": api_calls,
             "estimated_cost_usd": round(self.interpreter.estimated_cost_usd() - cost_before, 6),
             "generation_time_ms": round((time.perf_counter() - started) * 1000, 2),
@@ -765,9 +766,10 @@ class HybridReportGenerator:
         """Cache first, then the LLM, then pre-written text. Never raises."""
         if not self.interpreter.available:
             return fallback(), "fallback"
-        key = LLMInterpretationCache.make_key(kind, payload, self.cfg.llm_model, self.cfg.prompt_version)
+        model_id = self.interpreter.cache_model_id
+        key = LLMInterpretationCache.make_key(kind, payload, model_id, self.cfg.prompt_version)
         try:
-            value, _ = self.cache.get_or_create(key, kind, self.cfg.llm_model, generate)
+            value, _ = self.cache.get_or_create(key, kind, model_id, generate)
             return value, "llm"
         except LLMUnavailable as exc:
             log.warning("LLM %s generation failed, using fallback: %s", kind, exc)
@@ -801,11 +803,57 @@ class HybridReportGenerator:
             ],
         }
 
+    # -- cohort -----------------------------------------------------------
+
+    @staticmethod
+    def cohort_summary(analytics: Mapping[str, Any], norms: str, scoring_key: str) -> dict[str, Any]:
+        """Anonymised aggregate sent to the LLM for cohort analysis."""
+        a = analytics["assessments"]
+        dims = {}
+        for dim, d in analytics["dimensions"].items():
+            n = max(1, d["n"])
+            dims[dim] = {"mean_sten": d["mean_sten"],
+                         "pct_low": round(100 * d["levels"].get("Low", 0) / n),
+                         "pct_moderate": round(100 * d["levels"].get("Moderate", 0) / n),
+                         "pct_high": round(100 * d["levels"].get("High", 0) / n)}
+        return {"candidates": a["total"], "completed": a["by_status"].get("Completed", 0),
+                "flagged_responses": a["by_quality"].get("Questionable", 0),
+                "norms": norms, "scoring_key": scoring_key, "dimensions": dims}
+
+    def cohort_report(self, analytics: Mapping[str, Any]) -> dict[str, Any]:
+        summary = self.cohort_summary(analytics, self.engine.norms_status, self.bank.key_status)
+        calls_before = self.interpreter.usage.api_calls
+        value, source = self._cached_or_fallback(
+            kind="cohort", payload=summary,
+            generate=lambda: self.interpreter.cohort_analysis(summary),
+            fallback=lambda: self._fallback_cohort(summary),
+        )
+        return {**value, "content_source": source, "candidates": summary["candidates"],
+                "generated_by": self.interpreter.describe() if source == "llm" else None,
+                "api_calls_made": self.interpreter.usage.api_calls - calls_before}
+
+    @staticmethod
+    def _fallback_cohort(summary: Mapping[str, Any]) -> dict[str, Any]:
+        ranked = sorted(summary["dimensions"].items(), key=lambda kv: kv[1]["mean_sten"], reverse=True)
+        top = [d for d, _ in ranked[:3]]
+        low = [d for d, _ in ranked[-3:]][::-1]
+        caveat = (" Norms are provisional, so treat these patterns as indicative only."
+                  if summary["norms"] == "provisional" else "")
+        return {
+            "summary": (f"Across {summary['candidates']} candidates, the highest average scores are in "
+                        f"{', '.join(top)} and the lowest in {', '.join(low)}.{caveat}"),
+            "observations": [f"{d}: mean Sten {v['mean_sten']}, {v['pct_high']}% high and {v['pct_low']}% low."
+                             for d, v in ranked[:2] + ranked[-2:]],
+            "recommendations": [f"Consider development support for {low[0]} during onboarding.",
+                                "Configure an AI provider in the dashboard for a fuller written analysis."],
+        }
+
     def stats(self) -> dict[str, Any]:
         u = self.interpreter.usage
         return {
             "llm_available": self.interpreter.available,
-            "llm_model": self.cfg.llm_model,
+            "llm": self.interpreter.describe(),
+            "llm_model": self.interpreter.provider.model if self.interpreter.provider else None,
             "api_calls": u.api_calls,
             "api_failures": u.failures,
             "input_tokens": u.input_tokens,
@@ -834,7 +882,7 @@ def public_report(report: Mapping[str, Any]) -> dict[str, Any]:
 
 
 __all__ = [
-    "AssessmentInput", "ClaudeInterpreter", "DimensionScore", "HybridReportGenerator", "HybridScoringEngine",
+    "AssessmentInput", "ClaudeInterpreter", "LLMInterpreter", "DimensionScore", "HybridReportGenerator", "HybridScoringEngine",
     "INTERPRETATIONS", "LLMInterpretationCache", "LLMUnavailable", "QuestionBank", "ResponseValidator",
     "STEN_TABLE", "level_for_sten", "public_report", "z_to_percentile", "z_to_sten",
 ]

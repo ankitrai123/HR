@@ -22,7 +22,8 @@ from fastapi.testclient import TestClient
 
 from config import load_settings, validate_api_key_format
 from database_models import Database, DatabaseCacheStore, Response
-from hybrid_assessment_engine import (INTERPRETATIONS, AssessmentInput, ClaudeInterpreter, HybridReportGenerator,
+from llm_providers import AnthropicProvider
+from hybrid_assessment_engine import (INTERPRETATIONS, AssessmentInput, ClaudeInterpreter, HybridReportGenerator, LLMInterpreter,
                                       HybridScoringEngine, LLMInterpretationCache, QuestionBank, ResponseValidator,
                                       level_for_sten, z_to_percentile, z_to_sten)
 
@@ -280,7 +281,7 @@ def test_llm_interpretation_generation(cfg):
     assert call["model"] == cfg.llm_model
     assert call["output_config"]["effort"] == cfg.llm_effort
     assert call["output_config"]["format"]["type"] == "json_schema"
-    assert call["fallbacks"] == "default" and call["betas"] == [ClaudeInterpreter.FALLBACK_BETA]
+    assert call["fallbacks"] == "default" and call["betas"] == [AnthropicProvider.FALLBACK_BETA]
     assert "thinking" not in call and "temperature" not in call
 
     # Cheaper models: Haiku gets no effort param; non-Opus-5 models get no server fallback.
@@ -513,3 +514,220 @@ def test_performance_metrics(cfg):
     report = gen.premium_report(data[0])
     assert (time.perf_counter() - start) * 1000 < 500
     assert report["premium_features"]["api_calls_made"] == 0
+
+
+# ---------------------------------------------------------------------------
+# Multi-provider LLM support (NVIDIA NIM, OpenAI, Gemini, ... + dashboard config)
+# ---------------------------------------------------------------------------
+
+import llm_providers  # noqa: E402
+from llm_providers import (LLMUnavailable, OpenAICompatibleProvider, PROVIDERS, build_provider,  # noqa: E402
+                           extract_json, validate_schema)
+
+
+class MockCompatServer:
+    """An OpenAI-compatible endpoint (behaves like NVIDIA NIM) on httpx.MockTransport."""
+
+    def __init__(self, valid_key: str = "nvapi-good-key-1234", json_mode: bool = True, fence: bool = True):
+        self.valid_key, self.json_mode, self.fence = valid_key, json_mode, fence
+        self.requests: list[httpx.Request] = []
+        self.client = httpx.Client(transport=httpx.MockTransport(self.handle))
+
+    def bodies(self) -> list[dict]:
+        return [json.loads(r.content) for r in self.requests if r.method == "POST"]
+
+    def handle(self, request: httpx.Request) -> httpx.Response:
+        self.requests.append(request)
+        if request.headers.get("Authorization") != f"Bearer {self.valid_key}":
+            return httpx.Response(401, json={"error": {"message": "Invalid API key"}})
+        if request.url.path.endswith("/models"):
+            return httpx.Response(200, json={"object": "list", "data": [{"id": "meta/llama-3.3-70b-instruct"},
+                                                                          {"id": "nvidia/nemotron-4-340b"}]})
+        body = json.loads(request.content)
+        if "response_format" in body and not self.json_mode:
+            return httpx.Response(400, json={"error": {"message": "response_format is not supported"}})
+        system = body["messages"][0]["content"]  # dispatch on the schema's property names
+        if '"ok": {' in system:
+            payload = {"ok": True}
+        elif '"executive_summary": {' in system:
+            payload = {"executive_summary": "NIM summary.", "coaching_insights": ["NIM insight"]}
+        elif '"observations": {' in system:
+            payload = {"summary": "NIM cohort summary.", "observations": ["o1"], "recommendations": ["r1"]}
+        else:
+            payload = {"interpretation": "NIM interpretation.", "development_actions": ["n1", "n2", "n3"],
+                       "coaching_insight": "NIM coaching."}
+        text = json.dumps(payload)
+        if self.fence:  # many open models wrap JSON in fences and/or emit reasoning first
+            text = f"<think>planning the answer</think>\n```json\n{text}\n```"
+        return httpx.Response(200, json={
+            "choices": [{"index": 0, "finish_reason": "stop", "message": {"role": "assistant", "content": text}}],
+            "usage": {"prompt_tokens": 210, "completion_tokens": 90},
+        })
+
+
+def test_extract_json_and_schema_validation():
+    assert extract_json('```json\n{"a": 1}\n```') == {"a": 1}
+    assert extract_json('<think>hmm {"no": 1}</think> Sure! {"a": [1]} hope that helps') == {"a": [1]}
+    with pytest.raises(LLMUnavailable):
+        extract_json("no json here")
+    schema = {"type": "object", "properties": {"s": {"type": "string"}, "l": {"type": "array", "items": {"type": "string"}}},
+              "required": ["s", "l"]}
+    assert validate_schema({"s": "x", "l": ["y"], "extra": 1}, schema) == {"s": "x", "l": ["y"]}
+    for bad in ({"s": "x"}, {"s": 1, "l": []}, {"s": "x", "l": [1]}):
+        with pytest.raises(LLMUnavailable):
+            validate_schema(bad, schema)
+
+
+def test_provider_catalog_includes_nvidia_and_major_providers():
+    for pid in ("anthropic", "nvidia", "openai", "google", "groq", "mistral", "deepseek", "openrouter", "ollama", "custom"):
+        assert pid in PROVIDERS
+    assert PROVIDERS["nvidia"].base_url == "https://integrate.api.nvidia.com/v1"
+
+
+def test_openai_compatible_provider_request_and_parsing(cfg):
+    server = MockCompatServer()
+    nim = build_provider(cfg, "nvidia", "nvapi-good-key-1234", "meta/llama-3.3-70b-instruct", http_client=server.client)
+    gen = HybridReportGenerator(cfg=cfg, interpreter=LLMInterpreter(cfg, provider=nim))
+    data = candidate(9)
+    report = gen.premium_report(data)
+
+    pf = report["premium_features"]
+    assert pf["content_source"] == "llm" and pf["executive_summary"] == "NIM summary."
+    assert pf["generated_by"]["provider"] == "nvidia" and pf["generated_by"]["model"] == "meta/llama-3.3-70b-instruct"
+    assert gen.interpreter.usage.input_tokens == 210 * pf["api_calls_made"]
+
+    req = server.requests[0]
+    assert str(req.url) == "https://integrate.api.nvidia.com/v1/chat/completions"
+    body = server.bodies()[0]
+    assert body["model"] == "meta/llama-3.3-70b-instruct"
+    assert body["response_format"] == {"type": "json_object"} and body["max_tokens"] == cfg.llm_compat_max_tokens
+    sent = json.dumps(server.bodies())
+    for secret in (data.name, data.email, data.test_taker_id):
+        assert secret not in sent
+
+    # OpenAI uses max_completion_tokens.
+    oa = MockCompatServer(valid_key="sk-openai-key-5678")
+    build_provider(cfg, "openai", "sk-openai-key-5678", "some-model", http_client=oa.client).generate_json(
+        "s", "p", {"type": "object", "properties": {"ok": {"type": "boolean"}}, "required": ["ok"]})
+    assert "max_completion_tokens" in oa.bodies()[0] and "max_tokens" not in oa.bodies()[0]
+
+
+def test_openai_compatible_retries_without_json_mode(cfg):
+    server = MockCompatServer(json_mode=False)
+    p = build_provider(cfg, "groq", "nvapi-good-key-1234", "m", http_client=server.client)
+    schema = {"type": "object", "properties": {"ok": {"type": "boolean"}}, "required": ["ok"]}
+    assert p.generate_json("reply ok", "go", schema).data == {"ok": True}
+    assert len(server.bodies()) == 2 and "response_format" not in server.bodies()[1]
+    p.generate_json("reply ok", "go", schema)
+    assert len(server.bodies()) == 3  # remembers that JSON mode is unsupported
+
+
+def test_openai_compatible_errors_fall_back(cfg):
+    server = MockCompatServer()
+    bad_key = build_provider(cfg, "nvidia", "nvapi-wrong", "m", http_client=server.client)
+    with pytest.raises(LLMUnavailable, match="rejected the API key"):
+        bad_key.generate_json("s", "p", {"type": "object", "properties": {}, "required": []})
+    gen = HybridReportGenerator(cfg=cfg, interpreter=LLMInterpreter(cfg, provider=bad_key))
+    assert gen.premium_report(candidate(1))["premium_features"]["content_source"] == "fallback"
+
+    with pytest.raises(ValueError):
+        build_provider(cfg, "nvidia", None, "m")  # key required
+    with pytest.raises(ValueError):
+        build_provider(cfg, "custom", None, "m", base_url="ftp://x")
+    assert build_provider(cfg, "ollama", None, "llama3.1").base_url == "http://localhost:11434/v1"
+
+
+def test_cache_is_separated_by_provider(cfg):
+    fake, server = FakeClaude(), MockCompatServer()
+    cache = LLMInterpretationCache()
+    claude_gen = make_generator(cfg, client=fake, cache=cache)
+    claude_gen.premium_report(candidate(2))
+    nim = build_provider(cfg, "nvidia", "nvapi-good-key-1234", "meta/llama-3.3-70b-instruct", http_client=server.client)
+    nim_gen = HybridReportGenerator(cfg=cfg, interpreter=LLMInterpreter(cfg, provider=nim), cache=cache)
+    report = nim_gen.premium_report(candidate(2))
+    assert report["premium_features"]["executive_summary"] == "NIM summary."  # not Claude's cached text
+
+
+@pytest.fixture
+def nim_server(monkeypatch):
+    """Route every provider the API builds through the mock server."""
+    import api_server
+
+    server = MockCompatServer()
+    real = llm_providers.build_provider
+    monkeypatch.setattr(api_server, "build_provider",
+                        lambda *a, **k: real(*a, **{**k, "http_client": server.client}))
+    return server
+
+
+def test_dashboard_llm_configuration_flow(cfg, nim_server):
+    locked = dataclasses.replace(cfg, admin_api_key="admin-secret")
+    client = api_client(locked)
+    h = {"X-API-Key": "admin-secret"}
+
+    assert client.get("/api/admin/llm").status_code == 401
+    info = client.get("/api/admin/llm", headers=h).json()
+    assert info["current"]["available"] is False
+    assert any(p["id"] == "nvidia" and p["label"] == "NVIDIA NIM" for p in info["providers"])
+
+    models = client.post("/api/admin/llm/models", headers=h,
+                         json={"provider": "nvidia", "api_key": "nvapi-good-key-1234"}).json()
+    assert "meta/llama-3.3-70b-instruct" in models["models"]
+
+    bad = client.put("/api/admin/llm", headers=h, json={"provider": "nvidia", "model": "m", "api_key": "nvapi-wrong"})
+    assert bad.status_code == 400 and "Connection test failed" in bad.json()["detail"]
+    assert client.get("/api/admin/llm", headers=h).json()["current"]["available"] is False  # not saved
+
+    ok = client.put("/api/admin/llm", headers=h, json={
+        "provider": "nvidia", "model": "meta/llama-3.3-70b-instruct", "api_key": "nvapi-good-key-1234",
+        "input_price_per_mtok": 0.5, "output_price_per_mtok": 1.5})
+    assert ok.status_code == 200, ok.text
+    current = ok.json()["current"]
+    assert current["provider"] == "nvidia" and current["source"] == "dashboard" and current["key_hint"] == "…1234"
+    assert "nvapi-good-key-1234" not in client.get("/api/admin/llm", headers=h).text  # never echoed
+
+    # The key is encrypted at rest.
+    from database_models import LLMSettings
+    with client.app.state.db.session() as s:
+        assert b"nvapi-good-key-1234" not in s.get(LLMSettings, 1).api_key_ciphertext
+
+    # Saving without re-pasting the key reuses the stored one (same endpoint).
+    again = client.put("/api/admin/llm", headers=h, json={"provider": "nvidia", "model": "nvidia/nemotron-4-340b"})
+    assert again.status_code == 200 and again.json()["current"]["model"] == "nvidia/nemotron-4-340b"
+    # ...but not for a different endpoint.
+    moved = client.put("/api/admin/llm", headers=h, json={"provider": "custom", "model": "x",
+                                                          "base_url": "https://attacker.example/v1"})
+    assert moved.status_code == 400  # no key sent -> mock rejects it
+
+    aid = client.post("/api/assess", json=assess_body(30)).json()["assessment_id"]
+    premium = client.post("/api/generate-premium-report", headers=h, json={"test_id": aid}).json()
+    assert premium["premium_features"]["generated_by"]["provider"] == "nvidia"
+    assert premium["premium_features"]["estimated_cost_usd"] > 0
+
+    listed = client.get("/api/admin/assessments", headers=h).json()["assessments"]
+    assert listed[0]["assessment_id"] == aid and listed[0]["has_premium"] is True
+
+    cohort = client.post("/api/admin/cohort-analysis", headers=h).json()
+    assert cohort["content_source"] == "llm" and cohort["summary"] == "NIM cohort summary."
+    cohort_body = next(b for b in nim_server.bodies() if '"observations": {' in b["messages"][0]["content"])
+    assert "Candidate 30" not in json.dumps(cohort_body)  # aggregated only
+
+    cleared = client.delete("/api/admin/llm", headers=h).json()["current"]
+    assert cleared["available"] is False and cleared["source"] == "none"
+
+
+def test_cohort_analysis_fallback_and_empty(cfg):
+    client = api_client(cfg)
+    assert client.post("/api/admin/cohort-analysis").status_code == 409
+    for i in range(3):
+        client.post("/api/assess", json=assess_body(40 + i))
+    cohort = client.post("/api/admin/cohort-analysis").json()
+    assert cohort["content_source"] == "fallback" and cohort["candidates"] == 3
+    assert "provisional" in cohort["summary"]
+
+
+def test_provider_from_environment(cfg):
+    env_nim = dataclasses.replace(cfg, llm_provider="nvidia", llm_api_key="nvapi-env", llm_model="meta/llama-3.3-70b-instruct")
+    interp = LLMInterpreter(env_nim)
+    assert interp.provider.id == "nvidia" and interp.source == "environment"
+    assert LLMInterpreter(dataclasses.replace(cfg, llm_provider="nvidia")).provider is None  # no key

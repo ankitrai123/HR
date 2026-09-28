@@ -32,9 +32,17 @@ npm install && npm run dev      # http://localhost:5173
 
 When a candidate finishes, the completion page POSTs their answers to `/api/assess` once. It shows whether the server received them and offers a retry if it didn't. Without the variable, the frontend works offline as before. Make sure the frontend's origin is listed in `CORS_ORIGINS`.
 
-## Enabling Claude
+## Enabling AI analysis
 
-Set `ANTHROPIC_API_KEY` (from https://console.anthropic.com). Optionally pre-generate the 33 dimension insights so premium reports mostly cost one call:
+**From the dashboard (recommended).** Open `/admin` and enter the dashboard admin key. In **AI provider**, pick a provider (Anthropic, NVIDIA NIM, OpenAI, Google Gemini, Groq, Mistral, DeepSeek, Together, OpenRouter, Fireworks, xAI, Perplexity, Ollama or a custom OpenAI-compatible URL). Paste the API key, click **Fetch models**, choose one, and click **Save & test connection**.
+
+**From environment variables:** `ANTHROPIC_API_KEY` for Claude, or `LLM_PROVIDER` + `LLM_API_KEY` + `LLM_MODEL` for anything else. For example, NVIDIA NIM:
+
+```bash
+LLM_PROVIDER=nvidia LLM_API_KEY=nvapi-... LLM_MODEL=meta/llama-3.3-70b-instruct uvicorn api_server:app
+```
+
+Optionally pre-generate the 33 dimension insights so premium reports mostly cost one call:
 
 ```bash
 python -c "from api_server import app; print(app.state.generator.warm_cache(), 'API calls')"

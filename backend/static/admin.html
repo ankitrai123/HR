@@ -81,6 +81,54 @@
   .legend { display: flex; gap: 14px; font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; flex-wrap: wrap; }
   .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
   .scroll { overflow-x: auto; }
+  .card-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+  .card-head > div { flex: 1 1 260px; min-width: 0; }
+  .card-head h2 { margin-bottom: 4px; }
+  .pill { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 12px; max-width: 100%; overflow-wrap: anywhere;
+          background: var(--grid); color: var(--text-secondary); }
+  .pill.ok { background: #e7f6ea; color: #13751f; }
+  .pill.warn { background: #fff4e0; color: #8a5300; }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; }
+  .form-grid label { display: flex; flex-direction: column; gap: 5px; font-size: 13px; font-weight: 600; color: var(--text-secondary); min-width: 0; }
+  .form-grid input, .form-grid select { width: 100%; max-width: none; }
+  select { height: 34px; padding: 0 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface);
+           color: var(--text-primary); font: inherit; }
+  .inline { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+  .inline > input { flex: 1; min-width: 0; }
+  .inline label { flex: 1; min-width: 140px; }
+  .span2 { grid-column: 1 / -1; }
+  .hint { font-weight: 400; font-size: 12px; color: var(--text-muted); }
+  .hint-link { font-weight: 500; font-size: 12px; color: #2563eb; text-decoration: none; }
+  .actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  summary { cursor: pointer; font-size: 13px; color: var(--text-secondary); font-weight: 600; }
+  button.secondary { background: transparent; color: var(--text-primary); border: 1px solid var(--border); }
+  button.secondary:hover { border-color: #2563eb; color: #2563eb; }
+  button.danger:hover { border-color: #dc2626; color: #dc2626; }
+  button.small { height: 28px; padding: 0 10px; font-size: 12px; }
+  button:disabled { opacity: .55; cursor: progress; }
+  .grid2b { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 20px; }
+  @media (max-width: 860px) { .grid2b, .form-grid { grid-template-columns: minmax(0, 1fr); } }
+  .cand-scroll { max-height: 560px; overflow-y: auto; }
+  table.cand thead th { position: sticky; top: 0; background: var(--surface); }
+  table.cand td { font-size: 13px; }
+  table.cand .who { font-weight: 600; }
+  table.cand .sub { font-size: 12px; color: var(--text-muted); }
+  table.cand .acts { white-space: nowrap; text-align: right; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--grid); color: var(--text-secondary); }
+  .tag.flag { background: #fdeeee; color: #b42318; }
+  .ai h3 { font-size: 13px; margin: 14px 0 6px; color: var(--text-primary); }
+  .ai p, .ai li { font-size: 13px; color: var(--text-secondary); }
+  .ai ul { margin: 0; padding-left: 18px; }
+  .ai .by { font-size: 12px; color: var(--text-muted); margin-top: 12px; }
+  dialog { width: min(720px, calc(100vw - 32px)); max-height: calc(100vh - 48px); border: 1px solid var(--border); border-radius: 12px;
+           background: var(--surface); color: var(--text-primary); padding: 0; }
+  dialog::backdrop { background: rgba(15, 23, 42, .5); }
+  .dlg-head { position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center; gap: 12px;
+              padding: 14px 20px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .dlg-head h2 { margin: 0; }
+  #report-body { padding: 4px 20px 20px; }
+  .mini { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 4px 16px; margin-top: 8px; }
+  .mini div { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); border-bottom: 1px solid var(--grid); padding: 3px 0; }
   #tip { position: fixed; pointer-events: none; background: var(--tip-bg); color: var(--tip-text); font-size: 12px;
          padding: 6px 9px; border-radius: 6px; opacity: 0; transition: opacity .1s; z-index: 10; white-space: nowrap; }
 </style>
@@ -89,12 +137,56 @@
 <header>
   <h1>Assessment analytics</h1>
   <form class="auth" id="auth">
-    <input id="key" type="password" placeholder="Admin API key" autocomplete="off" aria-label="Admin API key" />
+    <input id="key" type="password" placeholder="Dashboard admin key" autocomplete="off" aria-label="Dashboard admin key" />
     <button type="submit">Load</button>
   </form>
 </header>
 <main>
   <p id="status" class="note">Loading…</p>
+
+  <section class="card" id="llm-card">
+    <div class="card-head">
+      <div>
+        <h2>AI provider</h2>
+        <p class="note" style="margin:0">Used for AI candidate analysis and cohort insights. Only anonymised scores are sent; names, emails and answers never leave this server.</p>
+      </div>
+      <span class="pill" id="llm-pill">Checking…</span>
+    </div>
+    <form id="llm-form" class="form-grid" autocomplete="off">
+      <label>Provider
+        <select id="llm-provider"></select>
+        <a id="llm-docs" class="hint-link" target="_blank" rel="noopener">Get an API key ↗</a>
+      </label>
+      <label>API key
+        <input id="llm-key" type="password" autocomplete="new-password" spellcheck="false" />
+        <span class="hint" id="llm-key-hint"></span>
+      </label>
+      <label id="llm-base-wrap">Base URL
+        <input id="llm-base" type="url" spellcheck="false" placeholder="https://…/v1" />
+      </label>
+      <label>Model
+        <span class="inline">
+          <input id="llm-model" list="llm-models" spellcheck="false" required />
+          <button type="button" class="secondary" id="llm-fetch">Fetch models</button>
+        </span>
+        <datalist id="llm-models"></datalist>
+        <span class="hint" id="llm-model-hint"></span>
+      </label>
+      <details class="span2">
+        <summary>Cost tracking (optional)</summary>
+        <div class="inline" style="margin-top:8px">
+          <label>Input $ / 1M tokens <input id="llm-in-price" type="number" min="0" step="0.01" /></label>
+          <label>Output $ / 1M tokens <input id="llm-out-price" type="number" min="0" step="0.01" /></label>
+        </div>
+      </details>
+      <div class="span2 actions">
+        <button type="submit" id="llm-save">Save &amp; test connection</button>
+        <button type="button" class="secondary danger" id="llm-remove">Disconnect</button>
+        <span class="note" id="llm-msg" role="status"></span>
+      </div>
+    </form>
+  </section>
+
   <section class="tiles" id="tiles"></section>
   <section class="grid2 hidden" id="charts">
     <div class="card">
@@ -119,7 +211,34 @@
       </div>
     </div>
   </section>
+
+  <section class="grid2b">
+    <div class="card">
+      <div class="card-head">
+        <h2>Candidates</h2>
+        <button type="button" class="secondary" id="cand-refresh">Refresh</button>
+      </div>
+      <div class="scroll cand-scroll">
+        <table class="cand">
+          <thead><tr><th>Candidate</th><th>Submitted</th><th>Quality</th><th>Strengths</th><th></th></tr></thead>
+          <tbody id="cand-rows"><tr><td colspan="5" class="note">No candidates yet.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h2>Cohort insights</h2>
+        <button type="button" id="cohort-run">Analyse cohort</button>
+      </div>
+      <div id="cohort-out" class="note">AI analysis of anonymised, aggregated results across all candidates.</div>
+    </div>
+  </section>
 </main>
+
+<dialog id="report">
+  <div class="dlg-head"><h2 id="report-title">Report</h2><button type="button" class="secondary" id="report-close">Close</button></div>
+  <div id="report-body"></div>
+</dialog>
 <div id="tip" role="tooltip"></div>
 <script>
   const $ = (id) => document.getElementById(id);
@@ -154,7 +273,8 @@
       tile("Assessments", a.total.toLocaleString(), `${(a.by_status.Completed || 0).toLocaleString()} completed`),
       tile("Genuine responses", a.total ? Math.round((genuine / a.total) * 100) + "%" : "–",
            `${(a.by_quality.Questionable || 0).toLocaleString()} flagged`),
-      tile("Premium reports", a.premium_reports.toLocaleString(), eng.llm_available ? eng.llm_model : "LLM not configured"),
+      tile("AI reports", a.premium_reports.toLocaleString(),
+           eng.llm_available ? `${eng.llm.provider_label} · ${eng.llm.model}` : "AI provider not configured"),
       tile("LLM cache hit rate", hit == null ? "–" : Math.round(hit * 100) + "%",
            `${eng.api_calls} API calls since start`),
       tile("Est. LLM spend", "$" + eng.estimated_cost_usd.toFixed(3), "since server start"),
@@ -202,14 +322,207 @@
     $("status").className = "note";
   }
 
-  async function load() {
+  // ---- API helper -----------------------------------------------------------
+  async function api(path, opts = {}) {
     const key = $("key").value || store.get();
-    $("key").value = key;
+    const headers = { ...(opts.body ? { "Content-Type": "application/json" } : {}), ...(key ? { "X-API-Key": key } : {}) };
+    const res = await fetch(path, { ...opts, headers });
+    if (res.status === 401) throw new Error("Enter a valid dashboard admin key.");
+    if (!res.ok) {
+      let detail = `Request failed (${res.status}).`;
+      try { const j = await res.json(); if (j.detail) detail = typeof j.detail === "string" ? j.detail : JSON.stringify(j.detail); } catch {}
+      throw new Error(detail);
+    }
+    return res;
+  }
+  async function busy(btn, label, fn) {
+    const text = btn.textContent; btn.disabled = true; btn.textContent = label;
+    try { return await fn(); } finally { btn.disabled = false; btn.textContent = text; }
+  }
+
+  // ---- AI provider settings ---------------------------------------------------
+  let providers = [], current = null;
+
+  function specFor(id) { return providers.find((p) => p.id === id); }
+
+  function applyProviderUI(id, keepValues) {
+    const spec = specFor(id);
+    if (!spec) return;
+    const same = current && current.source === "dashboard" && current.provider === id;
+    $("llm-docs").style.display = spec.docs_url ? "" : "none";
+    $("llm-docs").href = spec.docs_url || "#";
+    $("llm-key").placeholder = spec.requires_key ? spec.key_hint : "optional";
+    $("llm-key-hint").textContent = same && current.key_hint
+      ? `Saved key ${current.key_hint} — leave blank to keep it.` : (spec.requires_key ? "" : "Not required for this provider.");
+    $("llm-base-wrap").style.display = spec.base_url_editable ? "" : "none";
+    $("llm-model").placeholder = spec.model_hint;
+    $("llm-model-hint").textContent = spec.id === "anthropic" ? "" : "Tip: paste your key, then use Fetch models.";
+    if (!keepValues) {
+      $("llm-key").value = "";
+      $("llm-base").value = same && current.base_url ? current.base_url : (spec.base_url || "");
+      $("llm-model").value = same ? current.model : (spec.id === "anthropic" ? spec.model_hint : "");
+      $("llm-in-price").value = same ? current.input_price_per_mtok || "" : "";
+      $("llm-out-price").value = same ? current.output_price_per_mtok || "" : "";
+      $("llm-models").innerHTML = "";
+    }
+  }
+
+  function renderProviderStatus() {
+    const pill = $("llm-pill");
+    if (current && current.available) {
+      pill.className = "pill ok";
+      pill.textContent = `${current.provider_label} · ${current.model}` + (current.source === "environment" ? " (from server config)" : "");
+    } else {
+      pill.className = "pill warn";
+      pill.textContent = "Not configured — using pre-written text";
+    }
+    $("llm-remove").style.display = current && current.source === "dashboard" ? "" : "none";
+  }
+
+  async function loadProvider() {
+    const data = await (await api("/api/admin/llm")).json();
+    providers = data.providers; current = data.current;
+    $("llm-provider").innerHTML = providers.map((p) => `<option value="${esc(p.id)}">${esc(p.label)}</option>`).join("");
+    $("llm-provider").value = current.provider || "anthropic";
+    applyProviderUI($("llm-provider").value, false);
+    renderProviderStatus();
+  }
+
+  function providerPayload() {
+    const spec = specFor($("llm-provider").value);
+    const body = { provider: spec.id, model: $("llm-model").value.trim() };
+    if ($("llm-key").value.trim()) body.api_key = $("llm-key").value.trim();
+    if (spec.base_url_editable && $("llm-base").value.trim()) body.base_url = $("llm-base").value.trim();
+    return body;
+  }
+
+  $("llm-provider").addEventListener("change", (e) => applyProviderUI(e.target.value, false));
+
+  $("llm-fetch").addEventListener("click", (e) => busy(e.target, "Fetching…", async () => {
+    $("llm-msg").textContent = ""; $("llm-msg").className = "note";
     try {
-      const res = await fetch("/api/analytics", { headers: key ? { "X-API-Key": key } : {} });
-      if (res.status === 401) throw new Error("Enter a valid admin API key.");
-      if (!res.ok) throw new Error(`Request failed (${res.status}).`);
-      render(await res.json());
+      const { models } = await (await api("/api/admin/llm/models", { method: "POST", body: JSON.stringify(providerPayload()) })).json();
+      $("llm-models").innerHTML = models.map((m) => `<option value="${esc(m)}"></option>`).join("");
+      $("llm-msg").textContent = `${models.length} models available — pick one in the Model field.`;
+      $("llm-model").focus();
+    } catch (err) { $("llm-msg").textContent = err.message; $("llm-msg").className = "note error"; }
+  }));
+
+  $("llm-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    busy($("llm-save"), "Testing connection…", async () => {
+      $("llm-msg").textContent = ""; $("llm-msg").className = "note";
+      const body = providerPayload();
+      const inP = $("llm-in-price").value, outP = $("llm-out-price").value;
+      if (inP !== "") body.input_price_per_mtok = Number(inP);
+      if (outP !== "") body.output_price_per_mtok = Number(outP);
+      try {
+        const data = await (await api("/api/admin/llm", { method: "PUT", body: JSON.stringify(body) })).json();
+        current = data.current; $("llm-key").value = "";
+        applyProviderUI(current.provider, true); renderProviderStatus();
+        $("llm-msg").textContent = "Connected and saved. The key is stored encrypted.";
+      } catch (err) { $("llm-msg").textContent = err.message; $("llm-msg").className = "note error"; }
+    });
+  });
+
+  $("llm-remove").addEventListener("click", (e) => {
+    if (!confirm("Disconnect this AI provider and delete the saved key?")) return;
+    busy(e.target, "Removing…", async () => {
+      try {
+        current = (await (await api("/api/admin/llm", { method: "DELETE" })).json()).current;
+        applyProviderUI($("llm-provider").value, false); renderProviderStatus();
+        $("llm-msg").textContent = "Disconnected. The saved key was deleted."; $("llm-msg").className = "note";
+      } catch (err) { $("llm-msg").textContent = err.message; $("llm-msg").className = "note error"; }
+    });
+  });
+
+  // ---- Candidates & reports -------------------------------------------------
+  const fmtDate = (iso) => new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+
+  async function loadCandidates() {
+    const { assessments } = await (await api("/api/admin/assessments?limit=100")).json();
+    const rows = $("cand-rows");
+    if (!assessments.length) { rows.innerHTML = `<tr><td colspan="5" class="note">No candidates yet.</td></tr>`; return; }
+    rows.innerHTML = assessments.map((a) => `
+      <tr>
+        <td><div class="who">${esc(a.name)}</div><div class="sub">${esc(a.test_taker_id)}</div></td>
+        <td class="sub">${esc(fmtDate(a.submitted_at))}</td>
+        <td>${a.status !== "Completed" ? '<span class="tag flag">Incomplete</span>'
+             : a.response_quality === "Genuine" ? '<span class="tag">Genuine</span>' : '<span class="tag flag">Flagged</span>'}</td>
+        <td class="sub">${esc(a.strengths.slice(0, 2).join(", ") || "–")}</td>
+        <td class="acts">
+          ${a.status === "Completed" ? `<button class="small" data-act="ai" data-id="${esc(a.assessment_id)}">${a.has_premium ? "Re-run AI" : "AI analysis"}</button>` : ""}
+          <button class="small secondary" data-act="view" data-id="${esc(a.assessment_id)}">View</button>
+          <button class="small secondary" data-act="pdf" data-id="${esc(a.assessment_id)}" data-name="${esc(a.test_taker_id)}">PDF</button>
+        </td>
+      </tr>`).join("");
+  }
+
+  function list(items) { return `<ul>${items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>`; }
+  function byline(gen, source) {
+    if (source === "fallback" || !gen) return `<p class="by">Pre-written content (no AI provider available).</p>`;
+    return `<p class="by">Generated by ${esc(gen.provider_label)} · ${esc(gen.model)}${source === "mixed" ? " (partly pre-written)" : ""}</p>`;
+  }
+
+  function showReport(r) {
+    $("report-title").textContent = `${r.name} · ${r.test_id}`;
+    const scores = Object.entries(r.scores || {}).map(([d, s]) =>
+      `<div><span>${esc(d)}</span><b>${s.sten_score} · ${esc(s.level)}</b></div>`).join("");
+    let html = `<div class="ai"><h3>Summary</h3><p>${esc(r.profile_summary)}</p><div class="mini">${scores}</div>`;
+    const pf = r.premium_features;
+    if (pf && pf.executive_summary) {
+      html += `<h3>AI executive summary</h3><p>${esc(pf.executive_summary)}</p>
+        <h3>Development plan</h3>${pf.development_plan.map((p) => `<p><b>${esc(p.dimension)}</b></p>${list(p.actions)}`).join("")}
+        <h3>Coaching insights</h3>${list(pf.coaching_insights)}${byline(pf.generated_by, pf.content_source)}`;
+    } else {
+      html += `<p class="by">No AI analysis yet — use “AI analysis” in the candidates table.</p>`;
+    }
+    $("report-body").innerHTML = html + "</div>";
+    $("report").showModal();
+  }
+  $("report-close").addEventListener("click", () => $("report").close());
+
+  $("cand-rows").addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-act]");
+    if (!btn) return;
+    const id = btn.dataset.id;
+    try {
+      if (btn.dataset.act === "view") {
+        showReport(await (await api(`/api/results/${encodeURIComponent(id)}`)).json());
+      } else if (btn.dataset.act === "ai") {
+        const r = await busy(btn, "Analysing…", async () =>
+          (await api("/api/generate-premium-report", { method: "POST", body: JSON.stringify({ test_id: id }) })).json());
+        showReport(r); loadCandidates(); refreshAnalytics();
+      } else if (btn.dataset.act === "pdf") {
+        const blob = await (await api(`/api/export/${encodeURIComponent(id)}?format=pdf`, { method: "POST" })).blob();
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob); a.download = `assessment_${btn.dataset.name}.pdf`; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      }
+    } catch (err) { alert(err.message); }
+  });
+  $("cand-refresh").addEventListener("click", () => loadCandidates().catch((err) => alert(err.message)));
+
+  // ---- Cohort ---------------------------------------------------------------
+  $("cohort-run").addEventListener("click", (e) => busy(e.target, "Analysing…", async () => {
+    const out = $("cohort-out");
+    try {
+      const c = await (await api("/api/admin/cohort-analysis", { method: "POST" })).json();
+      out.className = "ai";
+      out.innerHTML = `<p>${esc(c.summary)}</p><h3>Observations</h3>${list(c.observations)}
+        <h3>Recommendations</h3>${list(c.recommendations)}${byline(c.generated_by, c.content_source)}
+        <p class="by">Based on ${c.candidates} candidate${c.candidates === 1 ? "" : "s"}.</p>`;
+      refreshAnalytics();
+    } catch (err) { out.className = "note error"; out.textContent = err.message; }
+  }));
+
+  // ---- Page load ------------------------------------------------------------
+  async function refreshAnalytics() { render(await (await api("/api/analytics")).json()); }
+
+  async function load() {
+    $("key").value = $("key").value || store.get();
+    try {
+      await Promise.all([refreshAnalytics(), loadProvider(), loadCandidates()]);
     } catch (err) {
       $("status").textContent = err.message; $("status").className = "note error";
     }

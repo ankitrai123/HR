@@ -20,6 +20,7 @@ from config import Settings, settings as default_settings
 from database_models import Assessment, Database, DatabaseCacheStore
 from hybrid_assessment_engine import (AssessmentInput, HybridReportGenerator, HybridScoringEngine,
                                       LLMInterpretationCache, public_report)
+from llm_providers import PROVIDERS, LLMUnavailable, build_provider, catalog, mask_key
 
 log = logging.getLogger("assessment.api")
 ADMIN_PAGE = Path(__file__).resolve().parent / "static" / "admin.html"
@@ -35,6 +36,29 @@ class AssessRequest(BaseModel):
         max_length=1000,
     )
     premium: bool = Field(default=False, description="Also generate the LLM-enhanced premium report.")
+
+
+class LLMConfigRequest(BaseModel):
+    provider: str = Field(examples=["nvidia"], description="Provider id from GET /api/admin/llm")
+    model: str = Field(min_length=1, max_length=200, examples=["meta/llama-3.3-70b-instruct"])
+    api_key: str | None = Field(default=None, max_length=500,
+                                description="Omit to keep the key already stored for this provider.")
+    base_url: str | None = Field(default=None, max_length=500, description="Only for Ollama / custom endpoints.")
+    input_price_per_mtok: float | None = Field(default=None, ge=0,
+                                               description="USD per million input tokens, for cost estimates. "
+                                                           "Omit to keep the stored value.")
+    output_price_per_mtok: float | None = Field(default=None, ge=0)
+    test: bool = Field(default=True, description="Make a tiny test call before saving.")
+
+
+class ModelListRequest(BaseModel):
+    provider: str
+    api_key: str | None = Field(default=None, max_length=500)
+    base_url: str | None = Field(default=None, max_length=500)
+
+
+TEST_SCHEMA = {"type": "object", "properties": {"ok": {"type": "boolean"}}, "required": ["ok"],
+               "additionalProperties": False}
 
 
 class PremiumRequest(BaseModel):
@@ -58,10 +82,64 @@ def create_app(cfg: Settings = default_settings, db: Database | None = None,
         generator = HybridReportGenerator(cfg=cfg, cache=cache)
 
     app = FastAPI(title="Hybrid Psychometric Assessment API", version="1.0.0",
-                  description="Deterministic Sten scoring with optional Claude-enhanced premium reports.")
+                  description="Deterministic Sten scoring with optional LLM-enhanced premium reports "
+                              "(Claude, NVIDIA NIM, OpenAI, Gemini and other OpenAI-compatible providers).")
     app.add_middleware(CORSMiddleware, allow_origins=list(cfg.cors_origins), allow_methods=["*"],
                        allow_headers=["*"])
     app.state.db, app.state.generator, app.state.cfg = db, generator, cfg
+
+    # The interpreter's initial provider (from environment variables or an
+    # injected test client) is the baseline restored when the dashboard
+    # setting is removed.
+    baseline = (generator.interpreter.provider, generator.interpreter.source,
+                generator.interpreter.input_price, generator.interpreter.output_price)
+    app.state.llm_version = None
+
+    def sync_llm() -> None:
+        """Apply the dashboard-configured provider if it changed (cheap
+        timestamp check, so every worker converges on the same setting)."""
+        version = db.llm_settings_version()
+        if version == app.state.llm_version:
+            return
+        app.state.llm_version = version
+        stored = db.get_llm_settings()
+        if stored is None:
+            generator.interpreter.set_provider(baseline[0], baseline[1], baseline[2], baseline[3])
+            return
+        try:
+            provider = build_provider(cfg, stored.provider, stored.api_key, stored.model, stored.base_url)
+        except ValueError as exc:
+            log.error("stored LLM settings are invalid (%s); keeping the previous provider", exc)
+            return
+        generator.interpreter.set_provider(provider, "dashboard", stored.input_price_per_mtok,
+                                           stored.output_price_per_mtok)
+
+    def llm_status() -> dict[str, Any]:
+        stored = db.get_llm_settings()
+        interp = generator.interpreter
+        info = interp.describe()
+        info.update(key_hint=stored.key_hint if stored and info["source"] == "dashboard" else None,
+                    base_url=stored.base_url if stored and info["source"] == "dashboard" else None,
+                    input_price_per_mtok=interp.input_price, output_price_per_mtok=interp.output_price,
+                    updated_at=stored.updated_at.isoformat() if stored else None)
+        return info
+
+    def resolve_key(provider: str, api_key: str | None, base_url: str | None) -> str | None:
+        """A pasted key wins; otherwise reuse the stored or environment key for
+        the same provider. A stored key is only reused for the same endpoint,
+        so it can't be redirected to a different server."""
+        if api_key:
+            return api_key.strip()
+        stored = db.get_llm_settings()
+        if stored and stored.provider == provider and stored.api_key and stored.base_url == base_url:
+            return stored.api_key
+        if provider == "anthropic" and cfg.anthropic_api_key:
+            return cfg.anthropic_api_key
+        if provider == cfg.llm_provider and cfg.llm_api_key:
+            return cfg.llm_api_key
+        return None
+
+    sync_llm()
 
     def require_admin(x_api_key: str | None = Header(default=None)) -> None:
         if cfg.admin_api_key and not (x_api_key and secrets.compare_digest(x_api_key, cfg.admin_api_key)):
@@ -108,6 +186,7 @@ def create_app(cfg: Settings = default_settings, db: Database | None = None,
             responses=responses, report=public_report(report), proportions=report.get("_proportions", {}),
         )
         if body.premium and report["status"] == "Completed":
+            sync_llm()
             report = generator.premium_report(data, standard=report)
             db.save_premium_report(assessment_id, public_report(report))
         return {**public_report(report), "assessment_id": assessment_id}
@@ -122,6 +201,7 @@ def create_app(cfg: Settings = default_settings, db: Database | None = None,
         if a.status != "Completed":
             raise HTTPException(status_code=409, detail="premium reports need a completed assessment")
         data = AssessmentInput(a.test_taker.external_id, a.test_taker.name, a.test_taker.email, {})
+        sync_llm()
         report = generator.premium_report(data, standard=dict(a.report))
         db.save_premium_report(a.id, public_report(report))
         return {**public_report(report), "assessment_id": a.id}
@@ -142,6 +222,7 @@ def create_app(cfg: Settings = default_settings, db: Database | None = None,
 
     @app.get("/api/analytics", dependencies=[Depends(require_admin)])
     def analytics() -> dict[str, Any]:
+        sync_llm()
         stats = db.analytics()
         stats["engine"] = generator.stats()
         stats["norms"] = generator.engine.norms_status
@@ -155,6 +236,83 @@ def create_app(cfg: Settings = default_settings, db: Database | None = None,
             return HybridScoringEngine.compute_norms(db.proportion_rows(), min_sample=min_sample)
         except ValueError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    # -- LLM provider settings (admin dashboard) -----------------------------
+
+    @app.get("/api/admin/llm", dependencies=[Depends(require_admin)])
+    def get_llm_config() -> dict[str, Any]:
+        """Current provider (the API key is never returned) and the provider catalog."""
+        sync_llm()
+        return {"current": llm_status(), "providers": catalog()}
+
+    @app.put("/api/admin/llm", dependencies=[Depends(require_admin)])
+    def put_llm_config(body: LLMConfigRequest) -> dict[str, Any]:
+        if body.provider not in PROVIDERS:
+            raise HTTPException(status_code=422, detail=f"unknown provider {body.provider!r}")
+        base_url = (body.base_url or "").strip() or None
+        api_key = resolve_key(body.provider, body.api_key, base_url)
+        try:
+            provider = build_provider(cfg, body.provider, api_key, body.model.strip(), base_url)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        if body.test:
+            try:
+                result = provider.generate_json("You are a connectivity check. Reply in JSON.",
+                                                'Return the JSON object {"ok": true}.', TEST_SCHEMA)
+            except LLMUnavailable as exc:
+                raise HTTPException(status_code=400, detail=f"Connection test failed: {exc}") from exc
+            if result.data.get("ok") is not True:
+                raise HTTPException(status_code=400, detail="Connection test failed: unexpected reply")
+        previous = db.get_llm_settings()
+        same = previous is not None and previous.provider == body.provider
+
+        def price(given: float | None, stored: float | None) -> float:
+            return given if given is not None else (stored if same and stored is not None else 0.0)
+
+        db.save_llm_settings(provider=body.provider, model=body.model.strip(), base_url=base_url, api_key=api_key,
+                             key_hint=mask_key(api_key),
+                             input_price=price(body.input_price_per_mtok, previous and previous.input_price_per_mtok),
+                             output_price=price(body.output_price_per_mtok, previous and previous.output_price_per_mtok))
+        log.info("LLM provider set to %s / %s from the admin dashboard", body.provider, body.model)
+        sync_llm()
+        return {"current": llm_status(), "tested": body.test}
+
+    @app.delete("/api/admin/llm", dependencies=[Depends(require_admin)])
+    def delete_llm_config() -> dict[str, Any]:
+        """Remove the dashboard setting and revert to the environment configuration."""
+        db.clear_llm_settings()
+        sync_llm()
+        return {"current": llm_status()}
+
+    @app.post("/api/admin/llm/models", dependencies=[Depends(require_admin)])
+    def list_llm_models(body: ModelListRequest) -> dict[str, Any]:
+        """List the models the given key can use (queried from the provider)."""
+        if body.provider not in PROVIDERS:
+            raise HTTPException(status_code=422, detail=f"unknown provider {body.provider!r}")
+        base_url = (body.base_url or "").strip() or None
+        try:
+            provider = build_provider(cfg, body.provider, resolve_key(body.provider, body.api_key, base_url),
+                                      "list-models", base_url)
+            return {"models": provider.list_models()}
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        except LLMUnavailable as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    # -- Dashboard analysis ------------------------------------------------------
+
+    @app.get("/api/admin/assessments", dependencies=[Depends(require_admin)])
+    def list_assessments(limit: int = Query(50, ge=1, le=500), offset: int = Query(0, ge=0)) -> dict[str, Any]:
+        return {"assessments": db.list_assessments(limit=limit, offset=offset)}
+
+    @app.post("/api/admin/cohort-analysis", dependencies=[Depends(require_admin)])
+    def cohort_analysis() -> dict[str, Any]:
+        """LLM analysis of aggregated (anonymised) results across all candidates."""
+        stats = db.analytics()
+        if not stats["assessments"]["total"]:
+            raise HTTPException(status_code=409, detail="no assessments to analyse yet")
+        sync_llm()
+        return generator.cohort_report(stats)
 
     @app.get("/admin", response_class=HTMLResponse, include_in_schema=False)
     def admin_page() -> str:

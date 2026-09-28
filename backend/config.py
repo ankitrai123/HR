@@ -70,6 +70,13 @@ class Settings:
 
     # --- LLM layer ----------------------------------------------------------
     anthropic_api_key: str | None = None
+    # Default provider when none is set from the admin dashboard: "anthropic"
+    # uses ANTHROPIC_API_KEY; any other id from llm_providers.PROVIDERS uses
+    # LLM_API_KEY (+ LLM_BASE_URL for ollama/custom).
+    llm_provider: str = "anthropic"
+    llm_api_key: str | None = None
+    llm_base_url: str | None = None
+    llm_compat_max_tokens: int = 4096
     llm_enabled: bool = True
     llm_model: str = "claude-opus-5"
     llm_effort: str = "medium"
@@ -100,7 +107,12 @@ class Settings:
 
     @property
     def llm_available(self) -> bool:
-        return self.llm_enabled and bool(self.anthropic_api_key)
+        """True when environment variables configure an LLM provider."""
+        if not self.llm_enabled:
+            return False
+        if self.llm_provider == "anthropic":
+            return bool(self.anthropic_api_key)
+        return bool(self.llm_api_key) or self.llm_provider in ("ollama", "custom")
 
     def validate(self) -> list[str]:
         """Return a list of configuration problems (empty when valid)."""
@@ -137,6 +149,10 @@ def load_settings() -> Settings:
         max_mean_fraction=_env_float("MAX_MEAN_FRACTION", 0.75),
         max_middle_fraction=_env_float("MAX_MIDDLE_FRACTION", 0.50),
         anthropic_api_key=_env("ANTHROPIC_API_KEY"),
+        llm_provider=_env("LLM_PROVIDER", "anthropic") or "anthropic",
+        llm_api_key=_env("LLM_API_KEY"),
+        llm_base_url=_env("LLM_BASE_URL"),
+        llm_compat_max_tokens=_env_int("LLM_COMPAT_MAX_TOKENS", 4096),
         llm_enabled=_env_bool("LLM_ENABLED", True),
         llm_model=_env("LLM_MODEL", "claude-opus-5") or "claude-opus-5",
         llm_effort=_env("LLM_EFFORT", "medium") or "medium",

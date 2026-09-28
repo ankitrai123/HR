@@ -18,6 +18,7 @@ import json
 import logging
 import uuid
 from contextlib import contextmanager
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Iterator, Mapping
 
@@ -115,6 +116,23 @@ class LLMCacheEntry(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
+class LLMSettings(Base):
+    """LLM provider chosen in the admin dashboard (single row, id=1).
+    The API key is Fernet-encrypted and never returned by the API."""
+
+    __tablename__ = "llm_settings"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    provider: Mapped[str] = mapped_column(String(40))
+    model: Mapped[str] = mapped_column(String(200))
+    base_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    api_key_ciphertext: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
+    key_hint: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    input_price_per_mtok: Mapped[float] = mapped_column(Float, default=0.0)
+    output_price_per_mtok: Mapped[float] = mapped_column(Float, default=0.0)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
 # ---------------------------------------------------------------------------
 # Encryption
 # ---------------------------------------------------------------------------
@@ -148,11 +166,32 @@ class ResponseCipher:
     def encrypt(self, responses: Mapping[int, int]) -> bytes:
         return self._fernet.encrypt(json.dumps({str(k): v for k, v in responses.items()}).encode())
 
+    def encrypt_text(self, text: str) -> bytes:
+        return self._fernet.encrypt(text.encode())
+
+    def decrypt_text(self, token: bytes) -> str:
+        try:
+            return self._fernet.decrypt(token).decode()
+        except InvalidToken as exc:
+            raise RuntimeError("stored secret could not be decrypted with the configured key") from exc
+
     def decrypt(self, token: bytes) -> dict[int, int]:
         try:
             return {int(k): v for k, v in json.loads(self._fernet.decrypt(token)).items()}
         except InvalidToken as exc:
             raise RuntimeError("stored responses could not be decrypted with the configured key") from exc
+
+
+@dataclass
+class StoredLLMSettings:
+    provider: str
+    model: str
+    base_url: str | None
+    api_key: str | None
+    key_hint: str | None
+    input_price_per_mtok: float
+    output_price_per_mtok: float
+    updated_at: datetime
 
 
 # ---------------------------------------------------------------------------
@@ -287,6 +326,51 @@ class Database:
             "sten_distribution": {int(k): v for k, v in sorted(sten_dist)},
             "llm_cache": {"persistent_entries": cache_entries, "persistent_hits": int(cache_hits)},
         }
+
+    # -- LLM settings (admin dashboard) ---------------------------------------
+
+    def get_llm_settings(self) -> StoredLLMSettings | None:
+        with self.session() as s:
+            row = s.get(LLMSettings, 1)
+            if row is None:
+                return None
+            key = self.cipher.decrypt_text(row.api_key_ciphertext) if row.api_key_ciphertext else None
+            return StoredLLMSettings(row.provider, row.model, row.base_url, key, row.key_hint,
+                                     row.input_price_per_mtok, row.output_price_per_mtok, row.updated_at)
+
+    def llm_settings_version(self) -> datetime | None:
+        with self.session() as s:
+            return s.scalar(select(LLMSettings.updated_at).where(LLMSettings.id == 1))
+
+    def save_llm_settings(self, *, provider: str, model: str, base_url: str | None, api_key: str | None,
+                          key_hint: str | None, input_price: float, output_price: float) -> None:
+        with self.session() as s:
+            row = s.get(LLMSettings, 1) or LLMSettings(id=1)
+            row.provider, row.model, row.base_url = provider, model, base_url
+            row.api_key_ciphertext = self.cipher.encrypt_text(api_key) if api_key else None
+            row.key_hint = key_hint
+            row.input_price_per_mtok, row.output_price_per_mtok = input_price, output_price
+            row.updated_at = utcnow()
+            s.add(row)
+
+    def clear_llm_settings(self) -> None:
+        with self.session() as s:
+            row = s.get(LLMSettings, 1)
+            if row is not None:
+                s.delete(row)
+
+    def list_assessments(self, limit: int = 50, offset: int = 0) -> list[dict[str, Any]]:
+        with self.session() as s:
+            rows = s.execute(
+                select(Assessment, TestTaker).join(TestTaker)
+                .order_by(Assessment.submitted_at.desc()).limit(limit).offset(offset)
+            ).all()
+        return [{"assessment_id": a.id, "test_taker_id": t.external_id, "name": t.name,
+                 "submitted_at": a.submitted_at.isoformat(), "status": a.status,
+                 "response_quality": a.response_quality, "has_premium": a.premium_report is not None,
+                 "strengths": a.report.get("strengths", []),
+                 "areas_of_development": a.report.get("areas_of_development", [])}
+                for a, t in rows]
 
 
 class DatabaseCacheStore:
