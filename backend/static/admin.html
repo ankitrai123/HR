@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Assessment Analytics</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f4f6fa; --surface: #ffffff; --border: #e2e8f0;
+    --text-primary: #0f172a; --text-secondary: #475569; --text-muted: #64748b;
+    --accent: #1a365d; --grid: #e8ecf2;
+    --seq: #2a78d6;                       /* single-hue sequential (Sten histogram, mean dot) */
+    --lvl-low: #e34948; --lvl-mid: #c9c8c2; --lvl-high: #2a78d6;  /* diverging: low | neutral | high */
+    --tip-bg: #0f172a; --tip-text: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --bg: #111110; --surface: #1a1a19; --border: #2e2e2b;
+      --text-primary: #ffffff; --text-secondary: #c3c2b7; --text-muted: #9a998f;
+      --accent: #cde2fb; --grid: #2a2a27;
+      --seq: #3987e5; --lvl-low: #e66767; --lvl-mid: #5a5a55; --lvl-high: #3987e5;
+      --tip-bg: #f4f4f2; --tip-text: #0f172a;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #111110; --surface: #1a1a19; --border: #2e2e2b;
+    --text-primary: #ffffff; --text-secondary: #c3c2b7; --text-muted: #9a998f;
+    --accent: #cde2fb; --grid: #2a2a27;
+    --seq: #3987e5; --lvl-low: #e66767; --lvl-mid: #5a5a55; --lvl-high: #3987e5;
+    --tip-bg: #f4f4f2; --tip-text: #0f172a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text-primary);
+         font: 14px/1.5 Inter, "Segoe UI", Roboto, system-ui, sans-serif; }
+  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;
+           padding: 16px 24px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  h1 { margin: 0; font-size: 18px; color: var(--accent); }
+  h2 { margin: 0 0 12px; font-size: 15px; color: var(--text-primary); }
+  .auth { display: flex; gap: 8px; }
+  input { height: 34px; padding: 0 10px; border: 1px solid var(--border); border-radius: 6px;
+          background: var(--surface); color: var(--text-primary); font: inherit; width: 220px; max-width: 50vw; }
+  button { height: 34px; padding: 0 14px; border: 0; border-radius: 6px; background: #2563eb; color: #fff;
+           font: inherit; font-weight: 600; cursor: pointer; }
+  main { max-width: 1200px; margin: 0 auto; padding: 24px 16px; display: grid; gap: 20px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; min-width: 0; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+  .tile { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .tile .label { font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  .tile .value { font-size: 28px; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .tile .sub { font-size: 12px; color: var(--text-secondary); }
+  .grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 20px; }
+  @media (max-width: 860px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+  .note { font-size: 12px; color: var(--text-muted); margin: 8px 0 0; }
+  .error { color: var(--lvl-low); font-weight: 600; }
+  .hidden { display: none; }
+  /* histogram */
+  .hist { display: flex; align-items: flex-end; gap: 2px; height: 180px; border-bottom: 1px solid var(--grid);
+          background: repeating-linear-gradient(to top, var(--grid) 0 1px, transparent 1px 45px); }
+  .hist .col { flex: 1; height: 100%; display: flex; align-items: flex-end; cursor: default; }
+  .hist .bar { width: 100%; background: var(--seq); border-radius: 4px 4px 0 0; min-height: 0; }
+  .hist .col:hover .bar { filter: brightness(1.12); }
+  .hist-axis { display: flex; gap: 2px; font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .hist-axis span { flex: 1; text-align: center; font-variant-numeric: tabular-nums; }
+  /* dimension table */
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 12px; color: var(--text-muted); font-weight: 600; padding: 0 8px 8px 0; }
+  td { padding: 8px 8px 8px 0; border-top: 1px solid var(--grid); vertical-align: middle; }
+  td.num { font-variant-numeric: tabular-nums; color: var(--text-secondary); width: 56px; }
+  td.mix { width: auto; white-space: nowrap; font-size: 12px; }
+  .track { position: relative; height: 18px; min-width: 120px; }
+  .track::before { content: ""; position: absolute; left: 0; right: 0; top: 8px; height: 2px; background: var(--grid); }
+  .track .dot { position: absolute; top: 3px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%;
+                background: var(--seq); box-shadow: 0 0 0 2px var(--surface); }
+  .stack { display: flex; gap: 2px; height: 12px; min-width: 120px; }
+  .stack span { height: 100%; }
+  .stack span:first-child { border-radius: 4px 0 0 4px; }
+  .stack span:last-child { border-radius: 0 4px 4px 0; }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; flex-wrap: wrap; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+  .scroll { overflow-x: auto; }
+  #tip { position: fixed; pointer-events: none; background: var(--tip-bg); color: var(--tip-text); font-size: 12px;
+         padding: 6px 9px; border-radius: 6px; opacity: 0; transition: opacity .1s; z-index: 10; white-space: nowrap; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Assessment analytics</h1>
+  <form class="auth" id="auth">
+    <input id="key" type="password" placeholder="Admin API key" autocomplete="off" aria-label="Admin API key" />
+    <button type="submit">Load</button>
+  </form>
+</header>
+<main>
+  <p id="status" class="note">Loading…</p>
+  <section class="tiles" id="tiles"></section>
+  <section class="grid2 hidden" id="charts">
+    <div class="card">
+      <h2>Sten score distribution</h2>
+      <div class="hist" id="hist" role="img" aria-label="Histogram of Sten scores across all dimensions"></div>
+      <div class="hist-axis" id="hist-axis"></div>
+      <p class="note">All dimension scores, Sten 1–10. Expected shape under calibrated norms is roughly bell-shaped around 5–6.</p>
+    </div>
+    <div class="card">
+      <h2>Dimensions</h2>
+      <div class="legend" aria-hidden="true">
+        <span><i style="background:var(--lvl-low)"></i>Low (1–4)</span>
+        <span><i style="background:var(--lvl-mid)"></i>Moderate (5–6)</span>
+        <span><i style="background:var(--lvl-high)"></i>High (7–10)</span>
+        <span><i style="background:var(--seq);border-radius:50%"></i>Mean Sten</span>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Dimension</th><th>Mean Sten (1–10)</th><th></th><th>Level mix</th><th>L · M · H</th><th>n</th></tr></thead>
+          <tbody id="dims"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+<div id="tip" role="tooltip"></div>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const tip = $("tip");
+  const store = {
+    get() { try { return sessionStorage.getItem("adminKey") || ""; } catch { return ""; } },
+    set(v) { try { sessionStorage.setItem("adminKey", v); } catch {} },
+  };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  function showTip(e, html) {
+    tip.innerHTML = html; tip.style.opacity = 1;
+    const x = Math.min(e.clientX + 12, window.innerWidth - tip.offsetWidth - 8);
+    tip.style.left = x + "px"; tip.style.top = (e.clientY - tip.offsetHeight - 10) + "px";
+  }
+  function hideTip() { tip.style.opacity = 0; }
+  function bindTip(el, html) {
+    el.addEventListener("mousemove", (e) => showTip(e, html));
+    el.addEventListener("mouseleave", hideTip);
+  }
+
+  function tile(label, value, sub = "") {
+    return `<div class="tile"><div class="label">${esc(label)}</div><div class="value">${esc(value)}</div>` +
+           (sub ? `<div class="sub">${esc(sub)}</div>` : "") + `</div>`;
+  }
+
+  function render(d) {
+    const a = d.assessments, eng = d.engine;
+    const genuine = a.by_quality.Genuine || 0;
+    const hit = eng.cache.hit_rate;
+    $("tiles").innerHTML = [
+      tile("Assessments", a.total.toLocaleString(), `${(a.by_status.Completed || 0).toLocaleString()} completed`),
+      tile("Genuine responses", a.total ? Math.round((genuine / a.total) * 100) + "%" : "–",
+           `${(a.by_quality.Questionable || 0).toLocaleString()} flagged`),
+      tile("Premium reports", a.premium_reports.toLocaleString(), eng.llm_available ? eng.llm_model : "LLM not configured"),
+      tile("LLM cache hit rate", hit == null ? "–" : Math.round(hit * 100) + "%",
+           `${eng.api_calls} API calls since start`),
+      tile("Est. LLM spend", "$" + eng.estimated_cost_usd.toFixed(3), "since server start"),
+      tile("Avg scoring time", a.avg_scoring_time_ms == null ? "–" : a.avg_scoring_time_ms + " ms", `norms: ${d.norms}`),
+    ].join("");
+
+    // Histogram (single series: the title names it, no legend box).
+    const dist = d.sten_distribution, counts = [];
+    for (let s = 1; s <= 10; s++) counts.push(dist[s] || 0);
+    const max = Math.max(1, ...counts), total = counts.reduce((x, y) => x + y, 0);
+    $("hist").innerHTML = ""; $("hist-axis").innerHTML = "";
+    counts.forEach((n, i) => {
+      const col = document.createElement("div"); col.className = "col";
+      col.innerHTML = `<div class="bar" style="height:${(n / max) * 100}%"></div>`;
+      bindTip(col, `<b>Sten ${i + 1}</b> · ${n.toLocaleString()} scores` +
+                   (total ? ` (${Math.round((n / total) * 100)}%)` : ""));
+      $("hist").appendChild(col);
+      $("hist-axis").insertAdjacentHTML("beforeend", `<span>${i + 1}</span>`);
+    });
+
+    // Dimension rows: mean dot on a 1–10 track + level mix stack.
+    const rows = $("dims"); rows.innerHTML = "";
+    Object.entries(d.dimensions).forEach(([dim, s]) => {
+      const tr = document.createElement("tr");
+      const pos = ((s.mean_sten - 1) / 9) * 100;
+      const lv = s.levels, n = s.n || 1;
+      tr.innerHTML = `<td>${esc(dim)}</td><td><div class="track"><span class="dot" style="left:${pos}%"></span></div></td>` +
+        `<td class="num">${s.mean_sten.toFixed(1)}</td><td><div class="stack"></div></td>` +
+        `<td class="num mix">${["Low", "Moderate", "High"].map((k) => Math.round(((lv[k] || 0) / n) * 100)).join(" · ")}%</td>` +
+        `<td class="num">${s.n}</td>`;
+      bindTip(tr.querySelector(".track"), `<b>${esc(dim)}</b> · mean Sten ${s.mean_sten.toFixed(2)} (range ${s.min_sten}–${s.max_sten})`);
+      const stack = tr.querySelector(".stack");
+      [["Low", "--lvl-low"], ["Moderate", "--lvl-mid"], ["High", "--lvl-high"]].forEach(([name, token]) => {
+        const count = lv[name] || 0;
+        if (!count) return;
+        const seg = document.createElement("span");
+        seg.style.width = (count / n) * 100 + "%"; seg.style.background = `var(${token})`;
+        bindTip(seg, `<b>${esc(dim)}</b> · ${name}: ${count} (${Math.round((count / n) * 100)}%)`);
+        stack.appendChild(seg);
+      });
+      rows.appendChild(tr);
+    });
+    $("charts").classList.toggle("hidden", !a.total);
+    $("status").textContent = a.total ? "" : "No assessments yet.";
+    $("status").className = "note";
+  }
+
+  async function load() {
+    const key = $("key").value || store.get();
+    $("key").value = key;
+    try {
+      const res = await fetch("/api/analytics", { headers: key ? { "X-API-Key": key } : {} });
+      if (res.status === 401) throw new Error("Enter a valid admin API key.");
+      if (!res.ok) throw new Error(`Request failed (${res.status}).`);
+      render(await res.json());
+    } catch (err) {
+      $("status").textContent = err.message; $("status").className = "note error";
+    }
+  }
+  $("auth").addEventListener("submit", (e) => { e.preventDefault(); store.set($("key").value); load(); });
+  load();
+</script>
+</body>
+</html>

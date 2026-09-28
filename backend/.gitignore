@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.env
+output/
+data/*.db
+data/.dev_encryption_key

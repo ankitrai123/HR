@@ -14,6 +14,8 @@ export interface SessionState {
   startedAt: number | null;
   submittedAt: number | null;
   submitReason: 'manual' | 'timeout' | null;
+  /** Server-side scoring id once the backend has accepted the submission. */
+  serverAssessmentId: string | null;
 }
 
 export type SessionAction =
@@ -27,6 +29,7 @@ export type SessionAction =
   | { type: 'toggleRevisit'; questionId: number }
   | { type: 'setIndex'; index: number }
   | { type: 'submit'; reason: 'manual' | 'timeout' }
+  | { type: 'serverAccepted'; assessmentId: string }
   | { type: 'reset' };
 
 const STORAGE_KEY = `psychometric:${test.testId}:session`;
@@ -42,6 +45,7 @@ const initialState: SessionState = {
   startedAt: null,
   submittedAt: null,
   submitReason: null,
+  serverAssessmentId: null,
 };
 
 function reducer(state: SessionState, action: SessionAction): SessionState {
@@ -84,6 +88,8 @@ function reducer(state: SessionState, action: SessionAction): SessionState {
     case 'submit':
       if (state.stage !== 'test') return state;
       return { ...state, stage: 'completed', submittedAt: Date.now(), submitReason: action.reason };
+    case 'serverAccepted':
+      return { ...state, serverAssessmentId: action.assessmentId };
     case 'reset':
       return initialState;
   }

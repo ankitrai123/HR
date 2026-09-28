@@ -607,6 +607,8 @@ kbd {
 .complete-badge { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: var(--success-soft); color: var(--success); }
 .complete-card h1 { color: var(--navy); font-size: 1.5rem; }
 .complete-stats { width: 100%; margin: 8px 0; padding: 16px; border-radius: var(--radius-sm); background: #f8fafc; border: 1px solid var(--border); text-align: left; }
+.sync-note { margin: 0; font-size: 0.875rem; }
+.sync-note .link-btn { display: inline; padding: 0 4px; }
 .complete-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 8px; }
 
 /* ---------- Responsive ---------- */

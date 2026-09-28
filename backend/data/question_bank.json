@@ -1,0 +1,1102 @@
+{
+  "instrument": "Personality Map (paraphrased)",
+  "key_status": "provisional",
+  "dimensions": [
+    {
+      "name": "Ethical Propensity",
+      "category": "Personal"
+    },
+    {
+      "name": "Initiative Taking",
+      "category": "Personal"
+    },
+    {
+      "name": "Adaptability",
+      "category": "Personal"
+    },
+    {
+      "name": "Team Work",
+      "category": "Interpersonal"
+    },
+    {
+      "name": "Networking",
+      "category": "Interpersonal"
+    },
+    {
+      "name": "Negotiation & Influence",
+      "category": "Interpersonal"
+    },
+    {
+      "name": "Service Orientation",
+      "category": "Excellence"
+    },
+    {
+      "name": "Result Orientation",
+      "category": "Excellence"
+    },
+    {
+      "name": "Leading by Example",
+      "category": "Leadership"
+    },
+    {
+      "name": "Innovation",
+      "category": "Leadership"
+    },
+    {
+      "name": "Strategic Orientation",
+      "category": "Leadership"
+    }
+  ],
+  "items": [
+    {
+      "id": 1,
+      "text": "My decision-making is often guided by my emotional responses.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 2,
+      "text": "I adhere strictly to established rules and regulations.",
+      "dimension": "Ethical Propensity",
+      "reverse_keyed": false
+    },
+    {
+      "id": 3,
+      "text": "When I perceive certain standard procedures as unnecessary, I tend to overlook them.",
+      "dimension": "Ethical Propensity",
+      "reverse_keyed": true
+    },
+    {
+      "id": 4,
+      "text": "I maintain unwavering ethical standards regardless of circumstances.",
+      "dimension": "Ethical Propensity",
+      "reverse_keyed": false
+    },
+    {
+      "id": 5,
+      "text": "I enjoy engaging in conversations with colleagues whose value systems differ from mine.",
+      "dimension": "Networking",
+      "reverse_keyed": false
+    },
+    {
+      "id": 6,
+      "text": "I have no difficulty building positive relationships with people who hold different beliefs.",
+      "dimension": "Networking",
+      "reverse_keyed": false
+    },
+    {
+      "id": 7,
+      "text": "I am skilled at adjusting to frequent shifts in my work responsibilities.",
+      "dimension": "Adaptability",
+      "reverse_keyed": false
+    },
+    {
+      "id": 8,
+      "text": "My attention wanes when discussions turn toward intricate or abstract topics.",
+      "dimension": "Innovation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 9,
+      "text": "I struggle to accurately interpret non-verbal cues during interpersonal interactions.",
+      "dimension": "Negotiation & Influence",
+      "reverse_keyed": true
+    },
+    {
+      "id": 10,
+      "text": "When uncertain, my tendency is to anticipate negative outcomes.",
+      "dimension": "Adaptability",
+      "reverse_keyed": true
+    },
+    {
+      "id": 11,
+      "text": "I rarely experience regret over my choices.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 12,
+      "text": "I am inclined to make spontaneous decisions.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 13,
+      "text": "I favor working independently.",
+      "dimension": "Team Work",
+      "reverse_keyed": true
+    },
+    {
+      "id": 14,
+      "text": "I consider timely delivery acceptable even if it means accepting some errors.",
+      "dimension": "Service Orientation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 15,
+      "text": "I desire autonomy in structuring my daily work routine.",
+      "dimension": "Initiative Taking",
+      "reverse_keyed": false
+    },
+    {
+      "id": 16,
+      "text": "I perceive myself as comfortable with taking on risks.",
+      "dimension": "Innovation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 17,
+      "text": "I am prepared to dispute a flawed argument, regardless of the speaker's seniority.",
+      "dimension": "Negotiation & Influence",
+      "reverse_keyed": false
+    },
+    {
+      "id": 18,
+      "text": "I persistently track task progress to ensure timely completion.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 19,
+      "text": "I adhere to established procedures when undertaking assignments.",
+      "dimension": "Ethical Propensity",
+      "reverse_keyed": false
+    },
+    {
+      "id": 20,
+      "text": "My personal conduct is guided by firm ethical convictions.",
+      "dimension": "Ethical Propensity",
+      "reverse_keyed": false
+    },
+    {
+      "id": 21,
+      "text": "I challenge and address unethical conduct when I encounter it.",
+      "dimension": "Ethical Propensity",
+      "reverse_keyed": false
+    },
+    {
+      "id": 22,
+      "text": "I lack confidence in assertively conveying my viewpoints.",
+      "dimension": "Negotiation & Influence",
+      "reverse_keyed": true
+    },
+    {
+      "id": 23,
+      "text": "Significant workplace transformations are something I prefer to avoid.",
+      "dimension": "Adaptability",
+      "reverse_keyed": true
+    },
+    {
+      "id": 24,
+      "text": "I offer assistance to colleagues primarily when obligated to do so.",
+      "dimension": "Team Work",
+      "reverse_keyed": true
+    },
+    {
+      "id": 25,
+      "text": "My disposition remains stable when confronted with uncertain circumstances.",
+      "dimension": "Adaptability",
+      "reverse_keyed": false
+    },
+    {
+      "id": 26,
+      "text": "I find satisfaction in assuming control of work-related situations.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": false
+    },
+    {
+      "id": 27,
+      "text": "I would rather emphasize the successes of my colleagues than my own.",
+      "dimension": "Team Work",
+      "reverse_keyed": false
+    },
+    {
+      "id": 28,
+      "text": "I possess well-defined objectives regarding my life aspirations.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 29,
+      "text": "I favor fast-paced work environments.",
+      "dimension": "Adaptability",
+      "reverse_keyed": false
+    },
+    {
+      "id": 30,
+      "text": "I find it natural to quickly establish rapport with unfamiliar people.",
+      "dimension": "Networking",
+      "reverse_keyed": false
+    },
+    {
+      "id": 31,
+      "text": "I find it challenging to accept constructive feedback in the workplace.",
+      "dimension": "Adaptability",
+      "reverse_keyed": true
+    },
+    {
+      "id": 32,
+      "text": "I appreciate receiving guidance and clear direction at work.",
+      "dimension": "Initiative Taking",
+      "reverse_keyed": true
+    },
+    {
+      "id": 33,
+      "text": "I frequently overlook minor or subtle elements in my work.",
+      "dimension": "Service Orientation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 34,
+      "text": "I harbor doubts regarding my own capabilities.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": true
+    },
+    {
+      "id": 35,
+      "text": "I am resistant to hierarchical organizational structures in my workplace.",
+      "dimension": "Ethical Propensity",
+      "reverse_keyed": true
+    },
+    {
+      "id": 36,
+      "text": "I view risk-taking as an imprudent course of action.",
+      "dimension": "Innovation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 37,
+      "text": "I have an ability to intuitively recognize the emotional conditions of others.",
+      "dimension": "Negotiation & Influence",
+      "reverse_keyed": false
+    },
+    {
+      "id": 38,
+      "text": "I am energized and revitalized by social interactions with others.",
+      "dimension": "Networking",
+      "reverse_keyed": false
+    },
+    {
+      "id": 39,
+      "text": "I have a pattern of encouraging others to quicken their speech.",
+      "dimension": "Negotiation & Influence",
+      "reverse_keyed": true
+    },
+    {
+      "id": 40,
+      "text": "I prefer having supervision and monitoring over my work.",
+      "dimension": "Initiative Taking",
+      "reverse_keyed": true
+    },
+    {
+      "id": 41,
+      "text": "I have questioned my competence and self-worth at various points in my life.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": true
+    },
+    {
+      "id": 42,
+      "text": "I have a tendency to anticipate unfavorable results.",
+      "dimension": "Adaptability",
+      "reverse_keyed": true
+    },
+    {
+      "id": 43,
+      "text": "I remain committed to completing tasks despite finding them monotonous.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 44,
+      "text": "In my experience, outcomes rarely align with my desired results.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 45,
+      "text": "I track progress against established objectives and implement corrective measures when required.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 46,
+      "text": "I am at ease with periods of inactivity during the workday.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 47,
+      "text": "I prefer working with minimal external oversight or monitoring.",
+      "dimension": "Initiative Taking",
+      "reverse_keyed": false
+    },
+    {
+      "id": 48,
+      "text": "I struggle to recover and move forward when experiencing workplace failures.",
+      "dimension": "Adaptability",
+      "reverse_keyed": true
+    },
+    {
+      "id": 49,
+      "text": "I interpret risks as potential opportunities for growth or advancement.",
+      "dimension": "Innovation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 50,
+      "text": "I hold an optimistic view regarding the integrity of people.",
+      "dimension": "Team Work",
+      "reverse_keyed": false
+    },
+    {
+      "id": 51,
+      "text": "I may resort to dishonesty when circumstances warrant it.",
+      "dimension": "Ethical Propensity",
+      "reverse_keyed": true
+    },
+    {
+      "id": 52,
+      "text": "I develop backup plans and modify strategies based on changing conditions.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 53,
+      "text": "I question the validity of assertions that lack supporting evidence.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 54,
+      "text": "I maintain high standards and refuse to submit substandard deliverables, even if it requires additional time.",
+      "dimension": "Service Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 55,
+      "text": "I maintain consistent concentration and am resistant to losing focus.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 56,
+      "text": "I prioritize collective team success over individual accomplishments.",
+      "dimension": "Team Work",
+      "reverse_keyed": false
+    },
+    {
+      "id": 57,
+      "text": "My performance is superior when working independently compared to collaborative settings.",
+      "dimension": "Team Work",
+      "reverse_keyed": true
+    },
+    {
+      "id": 58,
+      "text": "I tend to refrain from requesting input or suggestions from others.",
+      "dimension": "Team Work",
+      "reverse_keyed": true
+    },
+    {
+      "id": 59,
+      "text": "I demand verification and proof before accepting statements as factual.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 60,
+      "text": "I decline to deliver subpar output, even if meeting the original deadline becomes impossible.",
+      "dimension": "Service Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 61,
+      "text": "I exercise great precision and thoroughness when handling information.",
+      "dimension": "Service Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 62,
+      "text": "I actively seek opinions to enhance and refine my methods.",
+      "dimension": "Innovation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 63,
+      "text": "I welcome novel concepts and constructive suggestions from my peers.",
+      "dimension": "Innovation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 64,
+      "text": "I maintain emotional equilibrium when navigating disagreements.",
+      "dimension": "Negotiation & Influence",
+      "reverse_keyed": false
+    },
+    {
+      "id": 65,
+      "text": "I prioritize the welfare and objectives of my team above my personal interests.",
+      "dimension": "Team Work",
+      "reverse_keyed": false
+    },
+    {
+      "id": 66,
+      "text": "I maintain significant involvement in team initiatives and undertakings.",
+      "dimension": "Team Work",
+      "reverse_keyed": false
+    },
+    {
+      "id": 67,
+      "text": "I foster an environment where team members feel encouraged to share their views.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": false
+    },
+    {
+      "id": 68,
+      "text": "I base my choices on objective facts rather than subjective feelings.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 69,
+      "text": "I am fundamentally oriented toward achieving specific professional targets.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 70,
+      "text": "I am propelled forward by the drive to accomplish assigned tasks.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 71,
+      "text": "I experience fulfillment when reaching important achievement benchmarks.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 72,
+      "text": "I maintain a competitive mindset relative to my peer group.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 73,
+      "text": "I favor structured work environments with well-defined parameters.",
+      "dimension": "Adaptability",
+      "reverse_keyed": true
+    },
+    {
+      "id": 74,
+      "text": "I function optimally when objectives and performance expectations are transparently defined.",
+      "dimension": "Initiative Taking",
+      "reverse_keyed": true
+    },
+    {
+      "id": 75,
+      "text": "I tend to resist modifications to my established work methodology.",
+      "dimension": "Adaptability",
+      "reverse_keyed": true
+    },
+    {
+      "id": 76,
+      "text": "My pursuit of perfection occasionally impedes my overall productivity.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 77,
+      "text": "I rely on regular input to enhance my work performance.",
+      "dimension": "Initiative Taking",
+      "reverse_keyed": true
+    },
+    {
+      "id": 78,
+      "text": "I maintain consistent focus and am not easily sidetracked by peripheral matters.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 79,
+      "text": "I am readily distracted and struggle to sustain concentration.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 80,
+      "text": "I devote considerable mental energy to reflecting upon my missteps.",
+      "dimension": "Adaptability",
+      "reverse_keyed": true
+    },
+    {
+      "id": 81,
+      "text": "I experience worry regarding the potential for committing errors.",
+      "dimension": "Adaptability",
+      "reverse_keyed": true
+    },
+    {
+      "id": 82,
+      "text": "I have a tendency to circumvent situations where failure is a possibility.",
+      "dimension": "Innovation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 83,
+      "text": "I feel secure in my professional and personal capabilities.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": false
+    },
+    {
+      "id": 84,
+      "text": "I feel at ease delegating responsibilities to other team members.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": false
+    },
+    {
+      "id": 85,
+      "text": "I experience difficulty in committing to choices in high-pressure scenarios.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 86,
+      "text": "I experience irritation and dissatisfaction when confronted with organizational change.",
+      "dimension": "Adaptability",
+      "reverse_keyed": true
+    },
+    {
+      "id": 87,
+      "text": "I tend to allow my emotional state to dictate my behaviors.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": true
+    },
+    {
+      "id": 88,
+      "text": "I possess strong capabilities in managing stressful circumstances.",
+      "dimension": "Adaptability",
+      "reverse_keyed": false
+    },
+    {
+      "id": 89,
+      "text": "I react strongly to critical remarks directed at me.",
+      "dimension": "Negotiation & Influence",
+      "reverse_keyed": true
+    },
+    {
+      "id": 90,
+      "text": "I experience concerns about forthcoming possibilities and outcomes.",
+      "dimension": "Adaptability",
+      "reverse_keyed": true
+    },
+    {
+      "id": 91,
+      "text": "My thought patterns tend to emphasize potential negative outcomes rather than positive possibilities.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": true
+    },
+    {
+      "id": 92,
+      "text": "I have a propensity to assign responsibility for my failures to external parties or others.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": true
+    },
+    {
+      "id": 93,
+      "text": "I acknowledge and own the consequences of my personal actions.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": false
+    },
+    {
+      "id": 94,
+      "text": "I naturally exhibit a peaceful and unruffled disposition.",
+      "dimension": "Negotiation & Influence",
+      "reverse_keyed": false
+    },
+    {
+      "id": 95,
+      "text": "I regard assertiveness as a crucial professional quality.",
+      "dimension": "Negotiation & Influence",
+      "reverse_keyed": false
+    },
+    {
+      "id": 96,
+      "text": "I articulate my convictions openly when I feel strongly about a subject.",
+      "dimension": "Negotiation & Influence",
+      "reverse_keyed": false
+    },
+    {
+      "id": 97,
+      "text": "I am comfortable communicating my personal perspectives and sentiments.",
+      "dimension": "Negotiation & Influence",
+      "reverse_keyed": false
+    },
+    {
+      "id": 98,
+      "text": "I am drawn to and curious about individuals with distinct backgrounds and viewpoints.",
+      "dimension": "Networking",
+      "reverse_keyed": false
+    },
+    {
+      "id": 99,
+      "text": "I derive pleasure from solitude and independent activities.",
+      "dimension": "Networking",
+      "reverse_keyed": true
+    },
+    {
+      "id": 100,
+      "text": "I identify with introverted personality characteristics.",
+      "dimension": "Networking",
+      "reverse_keyed": true
+    },
+    {
+      "id": 101,
+      "text": "Extended social engagement leaves me feeling mentally and emotionally fatigued.",
+      "dimension": "Networking",
+      "reverse_keyed": true
+    },
+    {
+      "id": 102,
+      "text": "I feel confident and assured when meeting unfamiliar individuals.",
+      "dimension": "Networking",
+      "reverse_keyed": false
+    },
+    {
+      "id": 103,
+      "text": "I find pleasure in social occasions and group gatherings.",
+      "dimension": "Networking",
+      "reverse_keyed": false
+    },
+    {
+      "id": 104,
+      "text": "I demonstrate a natural proficiency in forming and nurturing professional relationships.",
+      "dimension": "Networking",
+      "reverse_keyed": false
+    },
+    {
+      "id": 105,
+      "text": "I am able to move past interpersonal conflicts and tensions relatively swiftly.",
+      "dimension": "Team Work",
+      "reverse_keyed": false
+    },
+    {
+      "id": 106,
+      "text": "I readily extend forgiveness and do not hold onto grudges.",
+      "dimension": "Team Work",
+      "reverse_keyed": false
+    },
+    {
+      "id": 107,
+      "text": "I retain resentment over past offenses and negative interactions.",
+      "dimension": "Team Work",
+      "reverse_keyed": true
+    },
+    {
+      "id": 108,
+      "text": "I adopt a protective stance when subjected to feedback or criticism.",
+      "dimension": "Adaptability",
+      "reverse_keyed": true
+    },
+    {
+      "id": 109,
+      "text": "I give my full and concentrated attention to what others are communicating.",
+      "dimension": "Service Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 110,
+      "text": "I take into account the potential impact on others' feelings before expressing myself.",
+      "dimension": "Negotiation & Influence",
+      "reverse_keyed": false
+    },
+    {
+      "id": 111,
+      "text": "I naturally display understanding and compassion toward others' experiences.",
+      "dimension": "Service Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 112,
+      "text": "I possess a clear understanding of both my capabilities and limitations.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": false
+    },
+    {
+      "id": 113,
+      "text": "I maintain internal drive and motivation to accomplish my objectives.",
+      "dimension": "Initiative Taking",
+      "reverse_keyed": false
+    },
+    {
+      "id": 114,
+      "text": "I am willing to deviate from established guidelines when circumstances demand it.",
+      "dimension": "Innovation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 115,
+      "text": "I feel assured when interacting with diverse professional contacts and stakeholders.",
+      "dimension": "Networking",
+      "reverse_keyed": false
+    },
+    {
+      "id": 116,
+      "text": "I refrain from participating in or spreading rumors about colleagues.",
+      "dimension": "Ethical Propensity",
+      "reverse_keyed": false
+    },
+    {
+      "id": 117,
+      "text": "I experience discomfort in environments with large gatherings of people.",
+      "dimension": "Networking",
+      "reverse_keyed": true
+    },
+    {
+      "id": 118,
+      "text": "I am unable to withdraw from a task until I have achieved satisfactory completion.",
+      "dimension": "Service Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 119,
+      "text": "I actively search for possibilities to expand my knowledge and professional capabilities.",
+      "dimension": "Initiative Taking",
+      "reverse_keyed": false
+    },
+    {
+      "id": 120,
+      "text": "I find joy in acquiring and mastering new competencies and abilities.",
+      "dimension": "Initiative Taking",
+      "reverse_keyed": false
+    },
+    {
+      "id": 121,
+      "text": "I am receptive to guidance and critical feedback from those in senior positions.",
+      "dimension": "Adaptability",
+      "reverse_keyed": false
+    },
+    {
+      "id": 122,
+      "text": "I possess a natural inclination to investigate and understand how systems and processes function.",
+      "dimension": "Innovation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 123,
+      "text": "I consistently seek innovative approaches to enhance the standard of my output.",
+      "dimension": "Innovation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 124,
+      "text": "I draw motivation from accolades and incentives.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 125,
+      "text": "I value consistency and predictability in my career trajectory.",
+      "dimension": "Innovation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 126,
+      "text": "I am prepared to embrace uncertainty to accomplish my desired professional goals.",
+      "dimension": "Innovation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 127,
+      "text": "I bring originality and novel approaches to solving problems.",
+      "dimension": "Innovation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 128,
+      "text": "I employ imaginative thinking to navigate and resolve obstacles.",
+      "dimension": "Innovation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 129,
+      "text": "I possess the capability to shift my approach when encountering unfamiliar circumstances.",
+      "dimension": "Adaptability",
+      "reverse_keyed": false
+    },
+    {
+      "id": 130,
+      "text": "I demonstrate versatility and adjust my strategies according to situational demands.",
+      "dimension": "Adaptability",
+      "reverse_keyed": false
+    },
+    {
+      "id": 131,
+      "text": "I am inclined to initially reject or resist novel concepts and methodologies.",
+      "dimension": "Innovation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 132,
+      "text": "I demonstrate vigor and positive energy regarding my professional responsibilities.",
+      "dimension": "Initiative Taking",
+      "reverse_keyed": false
+    },
+    {
+      "id": 133,
+      "text": "I maintain a sense of connection and involvement in my everyday professional activities.",
+      "dimension": "Service Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 134,
+      "text": "I exhibit deep devotion and commitment to my profession.",
+      "dimension": "Service Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 135,
+      "text": "I perceive significance and purpose in the work I undertake.",
+      "dimension": "Service Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 136,
+      "text": "I am content with the responsibilities and scope of my present position.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 137,
+      "text": "I harbor aspirations for progression and advancement in my professional trajectory.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 138,
+      "text": "I am prepared to exert supplementary energy and commitment to attain professional success.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 139,
+      "text": "I demonstrate sustained dedication in the pursuit of my professional ambitions.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 140,
+      "text": "I am vulnerable to experiencing disillusionment when facing setbacks.",
+      "dimension": "Adaptability",
+      "reverse_keyed": true
+    },
+    {
+      "id": 141,
+      "text": "I display strength and stability when confronting professional obstacles.",
+      "dimension": "Adaptability",
+      "reverse_keyed": false
+    },
+    {
+      "id": 142,
+      "text": "I am able to recover and regain momentum promptly following unsuccessful attempts.",
+      "dimension": "Adaptability",
+      "reverse_keyed": false
+    },
+    {
+      "id": 143,
+      "text": "I maintain a positive outlook regarding future possibilities and developments.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": false
+    },
+    {
+      "id": 144,
+      "text": "I have confidence in my capacity to accomplish what I set out to achieve.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": false
+    },
+    {
+      "id": 145,
+      "text": "I am someone who acknowledges and appreciates incremental accomplishments.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": false
+    },
+    {
+      "id": 146,
+      "text": "I motivate and galvanize others through my personal conduct and example.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": false
+    },
+    {
+      "id": 147,
+      "text": "I naturally demonstrate qualities and capabilities associated with effective leadership.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": false
+    },
+    {
+      "id": 148,
+      "text": "I possess the ability to steer others toward embracing and advancing my strategic direction.",
+      "dimension": "Negotiation & Influence",
+      "reverse_keyed": false
+    },
+    {
+      "id": 149,
+      "text": "I characterize myself as someone who originates action rather than responding passively.",
+      "dimension": "Initiative Taking",
+      "reverse_keyed": false
+    },
+    {
+      "id": 150,
+      "text": "I take action to identify and address problems independently and without prompting.",
+      "dimension": "Initiative Taking",
+      "reverse_keyed": false
+    },
+    {
+      "id": 151,
+      "text": "I tend to look to others to assume responsibility for initiating action.",
+      "dimension": "Initiative Taking",
+      "reverse_keyed": true
+    },
+    {
+      "id": 152,
+      "text": "I feel self-assured when positioned in prominent or high-visibility positions.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": false
+    },
+    {
+      "id": 153,
+      "text": "I consistently and deliberately request evaluations and appraisals.",
+      "dimension": "Initiative Taking",
+      "reverse_keyed": false
+    },
+    {
+      "id": 154,
+      "text": "I am receptive to alternative viewpoints and interpretations.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 155,
+      "text": "I evaluate diverse positions before arriving at my final determination.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 156,
+      "text": "I am inclined to examine and challenge prevailing norms and conventional wisdom.",
+      "dimension": "Innovation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 157,
+      "text": "I demonstrate systematic and methodical reasoning in my cognitive processes.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 158,
+      "text": "I prioritize quantifiable information and evidence in my analysis and interpretation.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 159,
+      "text": "I employ rational and systematic methods when determining my course of action.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 160,
+      "text": "I have confidence in my ability to discern appropriate choices through intuitive perception.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 161,
+      "text": "I base consequential choices on inner sensations and instinctive reactions.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 162,
+      "text": "I am someone who engages in excessive contemplation and analysis.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 163,
+      "text": "I make choices with confidence and without unnecessary deliberation.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 164,
+      "text": "I am someone who acts without prior deliberation or extensive consideration.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 165,
+      "text": "I take conscious consideration of how my behaviors will influence circumstances and people.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 166,
+      "text": "I am someone who looks ahead and arranges affairs systematically.",
+      "dimension": "Strategic Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 167,
+      "text": "I maintain a systematic and structured approach to my professional duties.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 168,
+      "text": "I reliably achieve completion of assignments within stipulated timeframes.",
+      "dimension": "Result Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 169,
+      "text": "I maintain careful awareness of minor elements and specifications in my work.",
+      "dimension": "Service Orientation",
+      "reverse_keyed": false
+    },
+    {
+      "id": 170,
+      "text": "I frequently overlook important aspects due to insufficient attention to detail.",
+      "dimension": "Service Orientation",
+      "reverse_keyed": true
+    },
+    {
+      "id": 171,
+      "text": "I routinely arrive and complete tasks at or before the designated time.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": false
+    },
+    {
+      "id": 172,
+      "text": "I fulfill my obligations and promises consistently and reliably.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": false
+    },
+    {
+      "id": 173,
+      "text": "I am dependable and trustworthy in my professional interactions.",
+      "dimension": "Ethical Propensity",
+      "reverse_keyed": false
+    },
+    {
+      "id": 174,
+      "text": "My colleagues and team members recognize me as someone they can depend upon.",
+      "dimension": "Leading by Example",
+      "reverse_keyed": false
+    },
+    {
+      "id": 175,
+      "text": "I uphold rigorous principles of honest conduct and ethical behavior.",
+      "dimension": "Ethical Propensity",
+      "reverse_keyed": false
+    }
+  ]
+}

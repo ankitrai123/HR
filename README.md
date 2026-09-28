@@ -81,6 +81,12 @@ src/
   styles.css   Design tokens + all styles
 ```
 
+## Scoring backend
+
+[`backend/`](backend/README.md) is a Python/FastAPI service. It scores submissions on 11 competency dimensions (Sten scores, response-quality checks, pre-written interpretations) and can add Claude-generated premium reports. It also stores results with encrypted responses, exports PDF, JSON or text, and serves an analytics dashboard at `/admin`.
+
+To send candidates' answers to it, set `VITE_ASSESSMENT_API_URL` (see `.env.example`). The completion page then submits once and shows whether the server received the answers. Without it, the frontend runs offline as before.
+
 ## Not yet included
 
-This is a front-end only. There is no authentication, server-side persistence, document upload, proctoring, or scoring yet. The branding in `Brand.tsx` is a placeholder.
+There is no candidate authentication, document upload or proctoring yet. The branding in `Brand.tsx` is a placeholder.

@@ -1,4 +1,5 @@
-import type { Dispatch } from 'react';
+import { useCallback, useEffect, useRef, useState, type Dispatch } from 'react';
+import { API_URL, submitAssessment } from '../api';
 import { Check, Download } from '../components/Icons';
 import { candidate } from '../data/candidate';
 import { questions, test } from '../data/test';
@@ -34,8 +35,35 @@ interface Props {
   dispatch: Dispatch<SessionAction>;
 }
 
+type SyncStatus = 'offline' | 'sending' | 'sent' | 'failed';
+
 export function CompletionPage({ state, dispatch }: Props) {
   const attempted = Object.keys(state.answers).length;
+  const [sync, setSync] = useState<SyncStatus>(
+    !API_URL ? 'offline' : state.serverAssessmentId ? 'sent' : 'sending',
+  );
+  const inFlight = useRef(false);
+
+  const send = useCallback(async () => {
+    if (!API_URL || state.serverAssessmentId || inFlight.current) return;
+    inFlight.current = true;
+    setSync('sending');
+    try {
+      const assessmentId = await submitAssessment(state);
+      dispatch({ type: 'serverAccepted', assessmentId });
+      setSync('sent');
+    } catch {
+      setSync('failed');
+    } finally {
+      inFlight.current = false;
+    }
+  }, [state, dispatch]);
+
+  useEffect(() => {
+    void send();
+    // Submit once on arrival; retries are manual.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const minutes =
     state.startedAt && state.submittedAt ? Math.max(1, Math.round((state.submittedAt - state.startedAt) / 60000)) : null;
 
@@ -64,6 +92,14 @@ export function CompletionPage({ state, dispatch }: Props) {
           <div><dt>Answered</dt><dd>{attempted} of {questions.length}</dd></div>
           {minutes !== null && <div><dt>Time taken</dt><dd>{minutes} min</dd></div>}
         </dl>
+        {sync === 'sending' && <p className="sync-note"><span className="spinner" /> Sending your responses…</p>}
+        {sync === 'sent' && <p className="sync-note success-text">Responses received by the assessment server.</p>}
+        {sync === 'failed' && (
+          <p className="sync-note error-text">
+            We couldn't reach the assessment server. Your answers are saved on this device.{' '}
+            <button className="link-btn" onClick={() => void send()}>Retry</button>
+          </p>
+        )}
         <p className="muted">The recruitment team will contact you about next steps.</p>
         <div className="complete-actions">
           <button className="btn btn-outline" onClick={download}>
