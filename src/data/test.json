@@ -1,0 +1,949 @@
+{
+  "testId": "psychometric_01",
+  "title": "Personality Assessment",
+  "durationMinutes": 45,
+  "sections": [
+    {
+      "sectionId": "sec_1",
+      "sectionTitle": "Personality Inventory",
+      "questions": [
+        {
+          "id": 1,
+          "questionText": "I feel energised after spending time with a large group of people.",
+          "trait": "Extraversion",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 2,
+          "questionText": "I plan my tasks carefully before starting work.",
+          "trait": "Conscientiousness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 3,
+          "questionText": "I go out of my way to help colleagues who are struggling.",
+          "trait": "Agreeableness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 4,
+          "questionText": "I stay calm under pressure.",
+          "trait": "Emotional Stability",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 5,
+          "questionText": "I enjoy exploring new ideas and approaches.",
+          "trait": "Openness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 6,
+          "questionText": "I set challenging targets for myself.",
+          "trait": "Achievement Orientation",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 7,
+          "questionText": "I enjoy being the centre of attention at social events.",
+          "trait": "Extraversion",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 8,
+          "questionText": "I always meet the deadlines I commit to.",
+          "trait": "Conscientiousness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 9,
+          "questionText": "I find it easy to see things from another person's point of view.",
+          "trait": "Agreeableness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 10,
+          "questionText": "I recover quickly after a setback.",
+          "trait": "Emotional Stability",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 11,
+          "questionText": "I like trying out unfamiliar tools and technologies.",
+          "trait": "Openness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 12,
+          "questionText": "I am driven to be the best at what I do.",
+          "trait": "Achievement Orientation",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 13,
+          "questionText": "I find it easy to start conversations with strangers.",
+          "trait": "Extraversion",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 14,
+          "questionText": "I keep my workspace neat and organised.",
+          "trait": "Conscientiousness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 15,
+          "questionText": "I avoid arguments whenever possible.",
+          "trait": "Agreeableness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 16,
+          "questionText": "I rarely worry about things outside my control.",
+          "trait": "Emotional Stability",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 17,
+          "questionText": "I am curious about how things work.",
+          "trait": "Openness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 18,
+          "questionText": "I measure my success by the results I deliver.",
+          "trait": "Achievement Orientation",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 19,
+          "questionText": "I prefer working in a lively, busy environment.",
+          "trait": "Extraversion",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 20,
+          "questionText": "I double-check my work for errors before submitting it.",
+          "trait": "Conscientiousness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 21,
+          "questionText": "I trust people until they give me a reason not to.",
+          "trait": "Agreeableness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 22,
+          "questionText": "Criticism does not affect my mood for long.",
+          "trait": "Emotional Stability",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 23,
+          "questionText": "I prefer tasks that require creative thinking.",
+          "trait": "Openness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 24,
+          "questionText": "I take initiative without waiting to be asked.",
+          "trait": "Achievement Orientation",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 25,
+          "questionText": "I perform better by myself than with others.",
+          "trait": "Extraversion",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 26,
+          "questionText": "I follow through on tasks even when they become boring.",
+          "trait": "Conscientiousness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 27,
+          "questionText": "I am willing to compromise to keep the peace in a team.",
+          "trait": "Agreeableness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 28,
+          "questionText": "I remain composed when plans change unexpectedly.",
+          "trait": "Emotional Stability",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 29,
+          "questionText": "I enjoy discussing abstract or theoretical topics.",
+          "trait": "Openness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 30,
+          "questionText": "I enjoy taking responsibility for important outcomes.",
+          "trait": "Achievement Orientation",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 31,
+          "questionText": "I tend to speak up first in meetings.",
+          "trait": "Extraversion",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 32,
+          "questionText": "I set clear goals for myself and track my progress.",
+          "trait": "Conscientiousness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 33,
+          "questionText": "I enjoy mentoring less experienced colleagues.",
+          "trait": "Agreeableness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 34,
+          "questionText": "I often feel anxious before important events.",
+          "trait": "Emotional Stability",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 35,
+          "questionText": "I like to experiment rather than follow a set method.",
+          "trait": "Openness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 36,
+          "questionText": "I am comfortable making decisions with incomplete information.",
+          "trait": "Achievement Orientation",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 37,
+          "questionText": "I enjoy networking with people outside my team.",
+          "trait": "Extraversion",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 38,
+          "questionText": "I prefer to have a detailed schedule for my day.",
+          "trait": "Conscientiousness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 39,
+          "questionText": "I say what I think even if it may upset others.",
+          "trait": "Agreeableness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 40,
+          "questionText": "I can keep my emotions in check during disagreements.",
+          "trait": "Emotional Stability",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 41,
+          "questionText": "I seek out opportunities to learn new skills.",
+          "trait": "Openness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 42,
+          "questionText": "I persist when a task becomes difficult.",
+          "trait": "Achievement Orientation",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 43,
+          "questionText": "I would rather spend a weekend with friends than alone.",
+          "trait": "Extraversion",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 44,
+          "questionText": "I often leave things until the last minute.",
+          "trait": "Conscientiousness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 45,
+          "questionText": "I am patient with people who make mistakes.",
+          "trait": "Agreeableness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 46,
+          "questionText": "I sometimes feel overwhelmed by my workload.",
+          "trait": "Emotional Stability",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 47,
+          "questionText": "I prefer familiar routines to new experiences.",
+          "trait": "Openness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 48,
+          "questionText": "I like to take the lead on new projects.",
+          "trait": "Achievement Orientation",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 49,
+          "questionText": "I find it easy to express my opinions in a group.",
+          "trait": "Extraversion",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 50,
+          "questionText": "I pay close attention to small details.",
+          "trait": "Conscientiousness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 51,
+          "questionText": "I give credit to others for their contributions.",
+          "trait": "Agreeableness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 52,
+          "questionText": "I handle stressful deadlines without losing focus.",
+          "trait": "Emotional Stability",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 53,
+          "questionText": "I enjoy working on problems that have no obvious solution.",
+          "trait": "Openness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 54,
+          "questionText": "I feel satisfied only when I exceed expectations.",
+          "trait": "Achievement Orientation",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 55,
+          "questionText": "I get restless when I have to work quietly for long periods.",
+          "trait": "Extraversion",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 56,
+          "questionText": "I finish what I start.",
+          "trait": "Conscientiousness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 57,
+          "questionText": "I find it difficult to say no when someone asks for help.",
+          "trait": "Agreeableness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 58,
+          "questionText": "I rarely lose my temper.",
+          "trait": "Emotional Stability",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 59,
+          "questionText": "I appreciate art, music, or literature.",
+          "trait": "Openness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 60,
+          "questionText": "I actively look for ways to improve processes.",
+          "trait": "Achievement Orientation",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 61,
+          "questionText": "I like to think things through before speaking.",
+          "trait": "Extraversion",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 62,
+          "questionText": "I find it hard to stick to routines.",
+          "trait": "Conscientiousness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 63,
+          "questionText": "I prefer cooperation over competition at work.",
+          "trait": "Agreeableness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 64,
+          "questionText": "Small problems can ruin my whole day.",
+          "trait": "Emotional Stability",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 65,
+          "questionText": "I am comfortable with ambiguity at work.",
+          "trait": "Openness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 66,
+          "questionText": "I am motivated by recognition for my work.",
+          "trait": "Achievement Orientation",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 67,
+          "questionText": "I enjoy presenting my ideas to an audience.",
+          "trait": "Extraversion",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 68,
+          "questionText": "I prepare thoroughly for important meetings.",
+          "trait": "Conscientiousness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 69,
+          "questionText": "I consider how my decisions affect other people.",
+          "trait": "Agreeableness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 70,
+          "questionText": "I feel confident about handling difficult situations.",
+          "trait": "Emotional Stability",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 71,
+          "questionText": "I often come up with original ideas.",
+          "trait": "Openness",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 72,
+          "questionText": "I prefer roles with clear opportunities for growth.",
+          "trait": "Achievement Orientation",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        }
+      ]
+    }
+  ]
+}
