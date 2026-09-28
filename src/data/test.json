@@ -9,8 +9,7 @@
       "questions": [
         {
           "id": 1,
-          "questionText": "I feel energised after spending time with a large group of people.",
-          "trait": "Extraversion",
+          "questionText": "My decision-making is often guided by my emotional responses.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -22,8 +21,7 @@
         },
         {
           "id": 2,
-          "questionText": "I plan my tasks carefully before starting work.",
-          "trait": "Conscientiousness",
+          "questionText": "I adhere strictly to established rules and regulations.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -35,8 +33,7 @@
         },
         {
           "id": 3,
-          "questionText": "I go out of my way to help colleagues who are struggling.",
-          "trait": "Agreeableness",
+          "questionText": "When I perceive certain standard procedures as unnecessary, I tend to overlook them.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -48,8 +45,7 @@
         },
         {
           "id": 4,
-          "questionText": "I stay calm under pressure.",
-          "trait": "Emotional Stability",
+          "questionText": "I maintain unwavering ethical standards regardless of circumstances.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -61,8 +57,7 @@
         },
         {
           "id": 5,
-          "questionText": "I enjoy exploring new ideas and approaches.",
-          "trait": "Openness",
+          "questionText": "I enjoy engaging in conversations with colleagues whose value systems differ from mine.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -74,8 +69,7 @@
         },
         {
           "id": 6,
-          "questionText": "I set challenging targets for myself.",
-          "trait": "Achievement Orientation",
+          "questionText": "I have no difficulty building positive relationships with people who hold different beliefs.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -87,8 +81,7 @@
         },
         {
           "id": 7,
-          "questionText": "I enjoy being the centre of attention at social events.",
-          "trait": "Extraversion",
+          "questionText": "I am skilled at adjusting to frequent shifts in my work responsibilities.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -100,8 +93,7 @@
         },
         {
           "id": 8,
-          "questionText": "I always meet the deadlines I commit to.",
-          "trait": "Conscientiousness",
+          "questionText": "My attention wanes when discussions turn toward intricate or abstract topics.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -113,8 +105,7 @@
         },
         {
           "id": 9,
-          "questionText": "I find it easy to see things from another person's point of view.",
-          "trait": "Agreeableness",
+          "questionText": "I struggle to accurately interpret non-verbal cues during interpersonal interactions.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -126,8 +117,7 @@
         },
         {
           "id": 10,
-          "questionText": "I recover quickly after a setback.",
-          "trait": "Emotional Stability",
+          "questionText": "When uncertain, my tendency is to anticipate negative outcomes.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -139,8 +129,7 @@
         },
         {
           "id": 11,
-          "questionText": "I like trying out unfamiliar tools and technologies.",
-          "trait": "Openness",
+          "questionText": "I rarely experience regret over my choices.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -152,8 +141,7 @@
         },
         {
           "id": 12,
-          "questionText": "I am driven to be the best at what I do.",
-          "trait": "Achievement Orientation",
+          "questionText": "I am inclined to make spontaneous decisions.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -165,8 +153,7 @@
         },
         {
           "id": 13,
-          "questionText": "I find it easy to start conversations with strangers.",
-          "trait": "Extraversion",
+          "questionText": "I favor working independently.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -178,8 +165,7 @@
         },
         {
           "id": 14,
-          "questionText": "I keep my workspace neat and organised.",
-          "trait": "Conscientiousness",
+          "questionText": "I consider timely delivery acceptable even if it means accepting some errors.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -191,8 +177,7 @@
         },
         {
           "id": 15,
-          "questionText": "I avoid arguments whenever possible.",
-          "trait": "Agreeableness",
+          "questionText": "I desire autonomy in structuring my daily work routine.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -204,8 +189,7 @@
         },
         {
           "id": 16,
-          "questionText": "I rarely worry about things outside my control.",
-          "trait": "Emotional Stability",
+          "questionText": "I perceive myself as comfortable with taking on risks.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -217,8 +201,7 @@
         },
         {
           "id": 17,
-          "questionText": "I am curious about how things work.",
-          "trait": "Openness",
+          "questionText": "I am prepared to dispute a flawed argument, regardless of the speaker's seniority.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -230,8 +213,7 @@
         },
         {
           "id": 18,
-          "questionText": "I measure my success by the results I deliver.",
-          "trait": "Achievement Orientation",
+          "questionText": "I persistently track task progress to ensure timely completion.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -243,8 +225,7 @@
         },
         {
           "id": 19,
-          "questionText": "I prefer working in a lively, busy environment.",
-          "trait": "Extraversion",
+          "questionText": "I adhere to established procedures when undertaking assignments.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -256,8 +237,7 @@
         },
         {
           "id": 20,
-          "questionText": "I double-check my work for errors before submitting it.",
-          "trait": "Conscientiousness",
+          "questionText": "My personal conduct is guided by firm ethical convictions.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -269,8 +249,7 @@
         },
         {
           "id": 21,
-          "questionText": "I trust people until they give me a reason not to.",
-          "trait": "Agreeableness",
+          "questionText": "I challenge and address unethical conduct when I encounter it.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -282,8 +261,7 @@
         },
         {
           "id": 22,
-          "questionText": "Criticism does not affect my mood for long.",
-          "trait": "Emotional Stability",
+          "questionText": "I lack confidence in assertively conveying my viewpoints.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -295,8 +273,7 @@
         },
         {
           "id": 23,
-          "questionText": "I prefer tasks that require creative thinking.",
-          "trait": "Openness",
+          "questionText": "Significant workplace transformations are something I prefer to avoid.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -308,8 +285,7 @@
         },
         {
           "id": 24,
-          "questionText": "I take initiative without waiting to be asked.",
-          "trait": "Achievement Orientation",
+          "questionText": "I offer assistance to colleagues primarily when obligated to do so.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -321,8 +297,7 @@
         },
         {
           "id": 25,
-          "questionText": "I perform better by myself than with others.",
-          "trait": "Extraversion",
+          "questionText": "My disposition remains stable when confronted with uncertain circumstances.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -334,8 +309,7 @@
         },
         {
           "id": 26,
-          "questionText": "I follow through on tasks even when they become boring.",
-          "trait": "Conscientiousness",
+          "questionText": "I find satisfaction in assuming control of work-related situations.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -347,8 +321,7 @@
         },
         {
           "id": 27,
-          "questionText": "I am willing to compromise to keep the peace in a team.",
-          "trait": "Agreeableness",
+          "questionText": "I would rather emphasize the successes of my colleagues than my own.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -360,8 +333,7 @@
         },
         {
           "id": 28,
-          "questionText": "I remain composed when plans change unexpectedly.",
-          "trait": "Emotional Stability",
+          "questionText": "I possess well-defined objectives regarding my life aspirations.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -373,8 +345,7 @@
         },
         {
           "id": 29,
-          "questionText": "I enjoy discussing abstract or theoretical topics.",
-          "trait": "Openness",
+          "questionText": "I favor fast-paced work environments.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -386,8 +357,7 @@
         },
         {
           "id": 30,
-          "questionText": "I enjoy taking responsibility for important outcomes.",
-          "trait": "Achievement Orientation",
+          "questionText": "I find it natural to quickly establish rapport with unfamiliar people.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -399,8 +369,7 @@
         },
         {
           "id": 31,
-          "questionText": "I tend to speak up first in meetings.",
-          "trait": "Extraversion",
+          "questionText": "I find it challenging to accept constructive feedback in the workplace.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -412,8 +381,7 @@
         },
         {
           "id": 32,
-          "questionText": "I set clear goals for myself and track my progress.",
-          "trait": "Conscientiousness",
+          "questionText": "I appreciate receiving guidance and clear direction at work.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -425,8 +393,7 @@
         },
         {
           "id": 33,
-          "questionText": "I enjoy mentoring less experienced colleagues.",
-          "trait": "Agreeableness",
+          "questionText": "I frequently overlook minor or subtle elements in my work.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -438,8 +405,7 @@
         },
         {
           "id": 34,
-          "questionText": "I often feel anxious before important events.",
-          "trait": "Emotional Stability",
+          "questionText": "I harbor doubts regarding my own capabilities.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -451,8 +417,7 @@
         },
         {
           "id": 35,
-          "questionText": "I like to experiment rather than follow a set method.",
-          "trait": "Openness",
+          "questionText": "I am resistant to hierarchical organizational structures in my workplace.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -464,8 +429,7 @@
         },
         {
           "id": 36,
-          "questionText": "I am comfortable making decisions with incomplete information.",
-          "trait": "Achievement Orientation",
+          "questionText": "I view risk-taking as an imprudent course of action.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -477,8 +441,7 @@
         },
         {
           "id": 37,
-          "questionText": "I enjoy networking with people outside my team.",
-          "trait": "Extraversion",
+          "questionText": "I have an ability to intuitively recognize the emotional conditions of others.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -490,8 +453,7 @@
         },
         {
           "id": 38,
-          "questionText": "I prefer to have a detailed schedule for my day.",
-          "trait": "Conscientiousness",
+          "questionText": "I am energized and revitalized by social interactions with others.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -503,8 +465,7 @@
         },
         {
           "id": 39,
-          "questionText": "I say what I think even if it may upset others.",
-          "trait": "Agreeableness",
+          "questionText": "I have a pattern of encouraging others to quicken their speech.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -516,8 +477,7 @@
         },
         {
           "id": 40,
-          "questionText": "I can keep my emotions in check during disagreements.",
-          "trait": "Emotional Stability",
+          "questionText": "I prefer having supervision and monitoring over my work.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -529,8 +489,7 @@
         },
         {
           "id": 41,
-          "questionText": "I seek out opportunities to learn new skills.",
-          "trait": "Openness",
+          "questionText": "I have questioned my competence and self-worth at various points in my life.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -542,8 +501,7 @@
         },
         {
           "id": 42,
-          "questionText": "I persist when a task becomes difficult.",
-          "trait": "Achievement Orientation",
+          "questionText": "I have a tendency to anticipate unfavorable results.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -555,8 +513,7 @@
         },
         {
           "id": 43,
-          "questionText": "I would rather spend a weekend with friends than alone.",
-          "trait": "Extraversion",
+          "questionText": "I remain committed to completing tasks despite finding them monotonous.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -568,8 +525,7 @@
         },
         {
           "id": 44,
-          "questionText": "I often leave things until the last minute.",
-          "trait": "Conscientiousness",
+          "questionText": "In my experience, outcomes rarely align with my desired results.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -581,8 +537,7 @@
         },
         {
           "id": 45,
-          "questionText": "I am patient with people who make mistakes.",
-          "trait": "Agreeableness",
+          "questionText": "I track progress against established objectives and implement corrective measures when required.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -594,8 +549,7 @@
         },
         {
           "id": 46,
-          "questionText": "I sometimes feel overwhelmed by my workload.",
-          "trait": "Emotional Stability",
+          "questionText": "I am at ease with periods of inactivity during the workday.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -607,8 +561,7 @@
         },
         {
           "id": 47,
-          "questionText": "I prefer familiar routines to new experiences.",
-          "trait": "Openness",
+          "questionText": "I prefer working with minimal external oversight or monitoring.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -620,8 +573,7 @@
         },
         {
           "id": 48,
-          "questionText": "I like to take the lead on new projects.",
-          "trait": "Achievement Orientation",
+          "questionText": "I struggle to recover and move forward when experiencing workplace failures.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -633,8 +585,7 @@
         },
         {
           "id": 49,
-          "questionText": "I find it easy to express my opinions in a group.",
-          "trait": "Extraversion",
+          "questionText": "I interpret risks as potential opportunities for growth or advancement.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -646,8 +597,7 @@
         },
         {
           "id": 50,
-          "questionText": "I pay close attention to small details.",
-          "trait": "Conscientiousness",
+          "questionText": "I hold an optimistic view regarding the integrity of people.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -659,8 +609,7 @@
         },
         {
           "id": 51,
-          "questionText": "I give credit to others for their contributions.",
-          "trait": "Agreeableness",
+          "questionText": "I may resort to dishonesty when circumstances warrant it.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -672,8 +621,7 @@
         },
         {
           "id": 52,
-          "questionText": "I handle stressful deadlines without losing focus.",
-          "trait": "Emotional Stability",
+          "questionText": "I develop backup plans and modify strategies based on changing conditions.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -685,8 +633,7 @@
         },
         {
           "id": 53,
-          "questionText": "I enjoy working on problems that have no obvious solution.",
-          "trait": "Openness",
+          "questionText": "I question the validity of assertions that lack supporting evidence.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -698,8 +645,7 @@
         },
         {
           "id": 54,
-          "questionText": "I feel satisfied only when I exceed expectations.",
-          "trait": "Achievement Orientation",
+          "questionText": "I maintain high standards and refuse to submit substandard deliverables, even if it requires additional time.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -711,8 +657,7 @@
         },
         {
           "id": 55,
-          "questionText": "I get restless when I have to work quietly for long periods.",
-          "trait": "Extraversion",
+          "questionText": "I maintain consistent concentration and am resistant to losing focus.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -724,8 +669,7 @@
         },
         {
           "id": 56,
-          "questionText": "I finish what I start.",
-          "trait": "Conscientiousness",
+          "questionText": "I prioritize collective team success over individual accomplishments.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -737,8 +681,7 @@
         },
         {
           "id": 57,
-          "questionText": "I find it difficult to say no when someone asks for help.",
-          "trait": "Agreeableness",
+          "questionText": "My performance is superior when working independently compared to collaborative settings.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -750,8 +693,7 @@
         },
         {
           "id": 58,
-          "questionText": "I rarely lose my temper.",
-          "trait": "Emotional Stability",
+          "questionText": "I tend to refrain from requesting input or suggestions from others.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -763,8 +705,7 @@
         },
         {
           "id": 59,
-          "questionText": "I appreciate art, music, or literature.",
-          "trait": "Openness",
+          "questionText": "I demand verification and proof before accepting statements as factual.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -776,8 +717,7 @@
         },
         {
           "id": 60,
-          "questionText": "I actively look for ways to improve processes.",
-          "trait": "Achievement Orientation",
+          "questionText": "I decline to deliver subpar output, even if meeting the original deadline becomes impossible.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -789,8 +729,7 @@
         },
         {
           "id": 61,
-          "questionText": "I like to think things through before speaking.",
-          "trait": "Extraversion",
+          "questionText": "I exercise great precision and thoroughness when handling information.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -802,8 +741,7 @@
         },
         {
           "id": 62,
-          "questionText": "I find it hard to stick to routines.",
-          "trait": "Conscientiousness",
+          "questionText": "I actively seek opinions to enhance and refine my methods.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -815,8 +753,7 @@
         },
         {
           "id": 63,
-          "questionText": "I prefer cooperation over competition at work.",
-          "trait": "Agreeableness",
+          "questionText": "I welcome novel concepts and constructive suggestions from my peers.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -828,8 +765,7 @@
         },
         {
           "id": 64,
-          "questionText": "Small problems can ruin my whole day.",
-          "trait": "Emotional Stability",
+          "questionText": "I maintain emotional equilibrium when navigating disagreements.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -841,8 +777,7 @@
         },
         {
           "id": 65,
-          "questionText": "I am comfortable with ambiguity at work.",
-          "trait": "Openness",
+          "questionText": "I prioritize the welfare and objectives of my team above my personal interests.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -854,8 +789,7 @@
         },
         {
           "id": 66,
-          "questionText": "I am motivated by recognition for my work.",
-          "trait": "Achievement Orientation",
+          "questionText": "I maintain significant involvement in team initiatives and undertakings.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -867,8 +801,7 @@
         },
         {
           "id": 67,
-          "questionText": "I enjoy presenting my ideas to an audience.",
-          "trait": "Extraversion",
+          "questionText": "I foster an environment where team members feel encouraged to share their views.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -880,8 +813,7 @@
         },
         {
           "id": 68,
-          "questionText": "I prepare thoroughly for important meetings.",
-          "trait": "Conscientiousness",
+          "questionText": "I base my choices on objective facts rather than subjective feelings.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -893,8 +825,7 @@
         },
         {
           "id": 69,
-          "questionText": "I consider how my decisions affect other people.",
-          "trait": "Agreeableness",
+          "questionText": "I am fundamentally oriented toward achieving specific professional targets.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -906,8 +837,7 @@
         },
         {
           "id": 70,
-          "questionText": "I feel confident about handling difficult situations.",
-          "trait": "Emotional Stability",
+          "questionText": "I am propelled forward by the drive to accomplish assigned tasks.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -919,8 +849,7 @@
         },
         {
           "id": 71,
-          "questionText": "I often come up with original ideas.",
-          "trait": "Openness",
+          "questionText": "I experience fulfillment when reaching important achievement benchmarks.",
           "options": [
             "Strongly Disagree",
             "Disagree",
@@ -932,8 +861,1243 @@
         },
         {
           "id": 72,
-          "questionText": "I prefer roles with clear opportunities for growth.",
-          "trait": "Achievement Orientation",
+          "questionText": "I maintain a competitive mindset relative to my peer group.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 73,
+          "questionText": "I favor structured work environments with well-defined parameters.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 74,
+          "questionText": "I function optimally when objectives and performance expectations are transparently defined.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 75,
+          "questionText": "I tend to resist modifications to my established work methodology.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 76,
+          "questionText": "My pursuit of perfection occasionally impedes my overall productivity.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 77,
+          "questionText": "I rely on regular input to enhance my work performance.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 78,
+          "questionText": "I maintain consistent focus and am not easily sidetracked by peripheral matters.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 79,
+          "questionText": "I am readily distracted and struggle to sustain concentration.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 80,
+          "questionText": "I devote considerable mental energy to reflecting upon my missteps.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 81,
+          "questionText": "I experience worry regarding the potential for committing errors.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 82,
+          "questionText": "I have a tendency to circumvent situations where failure is a possibility.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 83,
+          "questionText": "I feel secure in my professional and personal capabilities.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 84,
+          "questionText": "I feel at ease delegating responsibilities to other team members.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 85,
+          "questionText": "I experience difficulty in committing to choices in high-pressure scenarios.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 86,
+          "questionText": "I experience irritation and dissatisfaction when confronted with organizational change.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 87,
+          "questionText": "I tend to allow my emotional state to dictate my behaviors.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 88,
+          "questionText": "I possess strong capabilities in managing stressful circumstances.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 89,
+          "questionText": "I react strongly to critical remarks directed at me.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 90,
+          "questionText": "I experience concerns about forthcoming possibilities and outcomes.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 91,
+          "questionText": "My thought patterns tend to emphasize potential negative outcomes rather than positive possibilities.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 92,
+          "questionText": "I have a propensity to assign responsibility for my failures to external parties or others.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 93,
+          "questionText": "I acknowledge and own the consequences of my personal actions.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 94,
+          "questionText": "I naturally exhibit a peaceful and unruffled disposition.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 95,
+          "questionText": "I regard assertiveness as a crucial professional quality.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 96,
+          "questionText": "I articulate my convictions openly when I feel strongly about a subject.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 97,
+          "questionText": "I am comfortable communicating my personal perspectives and sentiments.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 98,
+          "questionText": "I am drawn to and curious about individuals with distinct backgrounds and viewpoints.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 99,
+          "questionText": "I derive pleasure from solitude and independent activities.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 100,
+          "questionText": "I identify with introverted personality characteristics.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 101,
+          "questionText": "Extended social engagement leaves me feeling mentally and emotionally fatigued.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 102,
+          "questionText": "I feel confident and assured when meeting unfamiliar individuals.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 103,
+          "questionText": "I find pleasure in social occasions and group gatherings.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 104,
+          "questionText": "I demonstrate a natural proficiency in forming and nurturing professional relationships.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 105,
+          "questionText": "I am able to move past interpersonal conflicts and tensions relatively swiftly.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 106,
+          "questionText": "I readily extend forgiveness and do not hold onto grudges.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 107,
+          "questionText": "I retain resentment over past offenses and negative interactions.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 108,
+          "questionText": "I adopt a protective stance when subjected to feedback or criticism.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 109,
+          "questionText": "I give my full and concentrated attention to what others are communicating.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 110,
+          "questionText": "I take into account the potential impact on others' feelings before expressing myself.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 111,
+          "questionText": "I naturally display understanding and compassion toward others' experiences.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 112,
+          "questionText": "I possess a clear understanding of both my capabilities and limitations.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 113,
+          "questionText": "I maintain internal drive and motivation to accomplish my objectives.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 114,
+          "questionText": "I am willing to deviate from established guidelines when circumstances demand it.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 115,
+          "questionText": "I feel assured when interacting with diverse professional contacts and stakeholders.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 116,
+          "questionText": "I refrain from participating in or spreading rumors about colleagues.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 117,
+          "questionText": "I experience discomfort in environments with large gatherings of people.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 118,
+          "questionText": "I am unable to withdraw from a task until I have achieved satisfactory completion.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 119,
+          "questionText": "I actively search for possibilities to expand my knowledge and professional capabilities.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 120,
+          "questionText": "I find joy in acquiring and mastering new competencies and abilities.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 121,
+          "questionText": "I am receptive to guidance and critical feedback from those in senior positions.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 122,
+          "questionText": "I possess a natural inclination to investigate and understand how systems and processes function.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 123,
+          "questionText": "I consistently seek innovative approaches to enhance the standard of my output.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 124,
+          "questionText": "I draw motivation from accolades and incentives.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 125,
+          "questionText": "I value consistency and predictability in my career trajectory.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 126,
+          "questionText": "I am prepared to embrace uncertainty to accomplish my desired professional goals.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 127,
+          "questionText": "I bring originality and novel approaches to solving problems.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 128,
+          "questionText": "I employ imaginative thinking to navigate and resolve obstacles.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 129,
+          "questionText": "I possess the capability to shift my approach when encountering unfamiliar circumstances.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 130,
+          "questionText": "I demonstrate versatility and adjust my strategies according to situational demands.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 131,
+          "questionText": "I am inclined to initially reject or resist novel concepts and methodologies.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 132,
+          "questionText": "I demonstrate vigor and positive energy regarding my professional responsibilities.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 133,
+          "questionText": "I maintain a sense of connection and involvement in my everyday professional activities.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 134,
+          "questionText": "I exhibit deep devotion and commitment to my profession.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 135,
+          "questionText": "I perceive significance and purpose in the work I undertake.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 136,
+          "questionText": "I am content with the responsibilities and scope of my present position.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 137,
+          "questionText": "I harbor aspirations for progression and advancement in my professional trajectory.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 138,
+          "questionText": "I am prepared to exert supplementary energy and commitment to attain professional success.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 139,
+          "questionText": "I demonstrate sustained dedication in the pursuit of my professional ambitions.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 140,
+          "questionText": "I am vulnerable to experiencing disillusionment when facing setbacks.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 141,
+          "questionText": "I display strength and stability when confronting professional obstacles.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 142,
+          "questionText": "I am able to recover and regain momentum promptly following unsuccessful attempts.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 143,
+          "questionText": "I maintain a positive outlook regarding future possibilities and developments.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 144,
+          "questionText": "I have confidence in my capacity to accomplish what I set out to achieve.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 145,
+          "questionText": "I am someone who acknowledges and appreciates incremental accomplishments.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 146,
+          "questionText": "I motivate and galvanize others through my personal conduct and example.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 147,
+          "questionText": "I naturally demonstrate qualities and capabilities associated with effective leadership.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 148,
+          "questionText": "I possess the ability to steer others toward embracing and advancing my strategic direction.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 149,
+          "questionText": "I characterize myself as someone who originates action rather than responding passively.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 150,
+          "questionText": "I take action to identify and address problems independently and without prompting.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 151,
+          "questionText": "I tend to look to others to assume responsibility for initiating action.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 152,
+          "questionText": "I feel self-assured when positioned in prominent or high-visibility positions.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 153,
+          "questionText": "I consistently and deliberately request evaluations and appraisals.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 154,
+          "questionText": "I am receptive to alternative viewpoints and interpretations.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 155,
+          "questionText": "I evaluate diverse positions before arriving at my final determination.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 156,
+          "questionText": "I am inclined to examine and challenge prevailing norms and conventional wisdom.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 157,
+          "questionText": "I demonstrate systematic and methodical reasoning in my cognitive processes.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 158,
+          "questionText": "I prioritize quantifiable information and evidence in my analysis and interpretation.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 159,
+          "questionText": "I employ rational and systematic methods when determining my course of action.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 160,
+          "questionText": "I have confidence in my ability to discern appropriate choices through intuitive perception.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 161,
+          "questionText": "I base consequential choices on inner sensations and instinctive reactions.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 162,
+          "questionText": "I am someone who engages in excessive contemplation and analysis.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 163,
+          "questionText": "I make choices with confidence and without unnecessary deliberation.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 164,
+          "questionText": "I am someone who acts without prior deliberation or extensive consideration.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 165,
+          "questionText": "I take conscious consideration of how my behaviors will influence circumstances and people.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 166,
+          "questionText": "I am someone who looks ahead and arranges affairs systematically.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 167,
+          "questionText": "I maintain a systematic and structured approach to my professional duties.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 168,
+          "questionText": "I reliably achieve completion of assignments within stipulated timeframes.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 169,
+          "questionText": "I maintain careful awareness of minor elements and specifications in my work.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 170,
+          "questionText": "I frequently overlook important aspects due to insufficient attention to detail.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 171,
+          "questionText": "I routinely arrive and complete tasks at or before the designated time.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 172,
+          "questionText": "I fulfill my obligations and promises consistently and reliably.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 173,
+          "questionText": "I am dependable and trustworthy in my professional interactions.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 174,
+          "questionText": "My colleagues and team members recognize me as someone they can depend upon.",
+          "options": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        {
+          "id": 175,
+          "questionText": "I uphold rigorous principles of honest conduct and ethical behavior.",
           "options": [
             "Strongly Disagree",
             "Disagree",

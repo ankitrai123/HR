@@ -35,8 +35,8 @@ All test content is in [`src/data/test.json`](src/data/test.json), using this sc
       "sectionTitle": "Personality Inventory",
       "questions": [
         {
-          "id": 1,
-          "questionText": "I perform better by myself than with others.",
+          "id": 57,
+          "questionText": "My performance is superior when working independently compared to collaborative settings.",
           "trait": "Extraversion",
           "options": ["Strongly Disagree", "Disagree", "Somewhat Disagree", "Somewhat Agree", "Agree", "Strongly Agree"]
         }
@@ -49,7 +49,7 @@ All test content is in [`src/data/test.json`](src/data/test.json), using this sc
 - Question counts, section counts, duration and numbering all come from this file. Nothing else is hard-coded.
 - Multiple sections are supported: they show up in the section dropdown and the grid view.
 - `trait` is optional and passes through to the response export for scoring. Question `id`s must be unique across the whole test.
-- The bundled data is 72 dummy statements across six traits. They are placeholders, not a validated instrument.
+- The bundled data is 175 paraphrased personality statements in one section (45 minutes). They have no `trait` tags yet, so add them (and any reverse-keyed flags) before scoring.
 
 Candidate profile, registration window, guidelines, document checklist and support contacts are in [`src/data/candidate.ts`](src/data/candidate.ts). The registration window defaults to "opened yesterday, closes in 7 days" so the demo always works. Replace it with real dates.
 
