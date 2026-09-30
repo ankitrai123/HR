@@ -5,7 +5,8 @@ import { Bookmark, ChevronLeft, ChevronRight, Eraser } from '../components/Icons
 import { QuestionGrid } from '../components/QuestionGrid';
 import { QuestionNav } from '../components/QuestionNav';
 import { TestHeader, type TextSize } from '../components/TestHeader';
-import { questions, test } from '../data/test';
+import { questions } from '../data/test';
+import { useCandidate } from '../candidate/CandidateContext';
 import { useNow, type SessionAction, type SessionState } from '../hooks/useSession';
 
 interface Props {
@@ -20,7 +21,8 @@ export function TestPage({ state, dispatch, lastSavedAt }: Props) {
   const [finishOpen, setFinishOpen] = useState(false);
   const [textSize, setTextSize] = useState<TextSize>('normal');
 
-  const deadline = (state.startedAt ?? now) + test.durationMinutes * 60_000;
+  const { durationMinutes, organization, support } = useCandidate();
+  const deadline = (state.startedAt ?? now) + durationMinutes * 60_000;
   const remainingMs = deadline - now;
   const index = Math.min(state.currentIndex, questions.length - 1);
   const question = questions[index];
@@ -148,7 +150,7 @@ export function TestPage({ state, dispatch, lastSavedAt }: Props) {
         </button>
       </main>
 
-      <Footer />
+      <Footer organization={organization} support={support} />
 
       {gridOpen && (
         <QuestionGrid currentIndex={index} answers={state.answers} revisit={state.revisit} onSelect={goTo} onClose={closeGrid} />

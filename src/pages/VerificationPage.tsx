@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type Dispatch } from 'react';
-import { candidate } from '../data/candidate';
+import { useCandidate } from '../candidate/CandidateContext';
 import { questions, test } from '../data/test';
 import type { SessionAction, SessionState } from '../hooks/useSession';
 import { Check, Clock, FileText, Keyboard, Layers, Monitor } from '../components/Icons';
@@ -34,9 +34,14 @@ function runSystemChecks(): CheckResult[] {
 interface Props {
   state: SessionState;
   dispatch: Dispatch<SessionAction>;
+  /** Records the start on the server and begins the timer. */
+  onProceed: () => Promise<void>;
 }
 
-export function VerificationPage({ state, dispatch }: Props) {
+export function VerificationPage({ state, dispatch, onProceed }: Props) {
+  const candidate = useCandidate();
+  const [starting, setStarting] = useState(false);
+  const [startError, setStartError] = useState('');
   const [checks, setChecks] = useState<CheckResult[] | null>(null);
   const [inputError, setInputError] = useState('');
   const [isEmpty, setIsEmpty] = useState(true);
@@ -95,7 +100,7 @@ export function VerificationPage({ state, dispatch }: Props) {
             </div>
             <div className="metric">
               <span className="metric-icon"><Clock size={20} /></span>
-              <strong>{test.durationMinutes}</strong>
+              <strong>{candidate.durationMinutes}</strong>
               <span>Minutes</span>
             </div>
           </div>
@@ -186,10 +191,24 @@ export function VerificationPage({ state, dispatch }: Props) {
             <button className="btn btn-ghost" onClick={() => dispatch({ type: 'goTo', stage: 'registration' })}>
               Back
             </button>
-            <button className="btn btn-primary btn-lg" disabled={!canProceed} onClick={() => dispatch({ type: 'startTest' })}>
-              {resuming ? 'Resume test' : 'Proceed'}
+            <button
+              className="btn btn-primary btn-lg"
+              disabled={!canProceed || starting}
+              onClick={async () => {
+                setStarting(true);
+                setStartError('');
+                try {
+                  await onProceed();
+                } catch (err) {
+                  setStartError(err instanceof Error ? err.message : 'Could not start the test.');
+                  setStarting(false);
+                }
+              }}
+            >
+              {starting ? 'Starting…' : resuming ? 'Resume test' : 'Proceed'}
             </button>
           </div>
+          {startError && <p className="error-text verify-error">{startError}</p>}
         </section>
       </div>
     </main>

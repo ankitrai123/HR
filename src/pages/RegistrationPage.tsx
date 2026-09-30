@@ -1,11 +1,6 @@
 import type { Dispatch } from 'react';
-import {
-  candidate,
-  guidelines,
-  offerOverview,
-  registrationWindow,
-  requiredDocuments,
-} from '../data/candidate';
+import { useCandidate } from '../candidate/CandidateContext';
+import { guidelines, requiredDocuments } from '../data/candidate';
 import type { SessionAction, SessionState } from '../hooks/useSession';
 import { useNow } from '../hooks/useSession';
 import { Calendar, Check, Clock, FileText } from '../components/Icons';
@@ -27,8 +22,9 @@ interface Props {
 }
 
 export function RegistrationPage({ state, dispatch }: Props) {
+  const candidate = useCandidate();
   const now = useNow(30_000);
-  const { opens, closes } = registrationWindow;
+  const { opens, closes } = candidate.window;
   const status = now < opens.getTime() ? 'upcoming' : now > closes.getTime() ? 'closed' : 'open';
 
   const mandatory = requiredDocuments.filter((d) => !d.optional);
@@ -40,8 +36,8 @@ export function RegistrationPage({ state, dispatch }: Props) {
       <div className="page-title">
         <h1>Candidate Registration</h1>
         <p>
-          Welcome, {candidate.name}. Review the guidelines and confirm your documents before starting the
-          assessment for <strong>{candidate.role}</strong>.
+          Welcome, {candidate.name}. Review the guidelines and confirm your documents before starting your
+          assessment with <strong>{candidate.organization}</strong>.
         </p>
       </div>
 
@@ -54,18 +50,6 @@ export function RegistrationPage({ state, dispatch }: Props) {
                 <li key={g}>{g}</li>
               ))}
             </ol>
-          </section>
-
-          <section className="card">
-            <h2 className="card-title">Offer overview</h2>
-            <dl className="kv-grid">
-              {offerOverview.map((row) => (
-                <div key={row.label}>
-                  <dt>{row.label}</dt>
-                  <dd>{row.value}</dd>
-                </div>
-              ))}
-            </dl>
           </section>
 
           <section className="card">
@@ -104,9 +88,9 @@ export function RegistrationPage({ state, dispatch }: Props) {
         <aside className="stack sticky-col">
           <section className="card schedule-card">
             <div className="schedule-head">
-              <h2 className="card-title">Registration schedule</h2>
+              <h2 className="card-title">Link validity</h2>
               <span className={`status-pill status-${status}`}>
-                {status === 'open' ? 'Open' : status === 'upcoming' ? 'Not yet open' : 'Closed'}
+                {status === 'open' ? 'Active' : status === 'upcoming' ? 'Not yet open' : 'Closed'}
               </span>
             </div>
             <div className="schedule-row">
@@ -133,11 +117,12 @@ export function RegistrationPage({ state, dispatch }: Props) {
           </section>
 
           <section className="card candidate-card">
-            <h2 className="card-title">Candidate details</h2>
+            <h2 className="card-title">Your details</h2>
             <dl className="kv-list">
               <div><dt>Name</dt><dd>{candidate.name}</dd></div>
-              <div><dt>Candidate ID</dt><dd>{candidate.candidateId}</dd></div>
-              <div><dt>Email</dt><dd>{candidate.email}</dd></div>
+              <div><dt>Employee ID</dt><dd>{candidate.employeeCode}</dd></div>
+              {candidate.department && <div><dt>Department</dt><dd>{candidate.department}</dd></div>}
+              {candidate.email && <div><dt>Email</dt><dd>{candidate.email}</dd></div>}
             </dl>
             <button
               className="btn btn-primary btn-block"
@@ -149,7 +134,7 @@ export function RegistrationPage({ state, dispatch }: Props) {
             {!canContinue && (
               <p className="hint">
                 {status !== 'open'
-                  ? 'Registration is not open right now.'
+                  ? 'This link is not active right now.'
                   : 'Confirm all mandatory documents to continue.'}
               </p>
             )}

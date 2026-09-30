@@ -1,13 +1,19 @@
-import { candidate, support } from '../data/candidate';
+import type { Support } from '../candidate/CandidateContext';
 
-export function Footer() {
+export function Footer({ organization, support }: { organization: string; support?: Support }) {
   return (
     <footer className="app-footer">
-      <span>© {new Date().getFullYear()} {candidate.organization}. All rights reserved.</span>
-      <span>
-        Need help? Contact us at <a href={`mailto:${support.email}`}>{support.email}</a> or{' '}
-        <a href={`tel:${support.phone.replace(/\s/g, '')}`}>{support.phone}</a>
-      </span>
+      <span>© {new Date().getFullYear()} {organization}. All rights reserved.</span>
+      {support && (support.email || support.phone) && (
+        <span>
+          Need help? Contact us at <a href={`mailto:${support.email}`}>{support.email}</a>
+          {support.phone && (
+            <>
+              {' '}or <a href={`tel:${support.phone.replace(/\s/g, '')}`}>{support.phone}</a>
+            </>
+          )}
+        </span>
+      )}
     </footer>
   );
 }

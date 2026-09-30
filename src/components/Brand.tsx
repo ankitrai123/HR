@@ -1,7 +1,9 @@
-import { candidate } from '../data/candidate';
-
-/** Placeholder brand marks. Swap the SVGs/text for your organization's logos. */
-export function Brand({ compact = false }: { compact?: boolean }) {
+/** Placeholder brand marks. Swap the SVG/text for your organization's logos. */
+export function Brand({ organization, compact = false, subtitle = 'Talent Assessment' }: {
+  organization: string;
+  compact?: boolean;
+  subtitle?: string;
+}) {
   return (
     <div className="brand">
       <span className="brand-mark" aria-hidden="true">
@@ -11,8 +13,8 @@ export function Brand({ compact = false }: { compact?: boolean }) {
         </svg>
       </span>
       <span className="brand-name">
-        {candidate.organization}
-        {!compact && <small>Talent Assessment</small>}
+        {organization}
+        {!compact && <small>{subtitle}</small>}
       </span>
       {!compact && (
         <>

@@ -5,36 +5,45 @@
 - Python **3.10+**. The spec said 3.8+, but the current `anthropic` SDK (1.x) requires 3.10. Tested on 3.11.
 - Node 20+ for the candidate frontend (repo root).
 
-## Backend
+## Run the platform
+
+The backend serves everything from one address: the admin console (`/admin`), employees' personal links (`/t/<token>`) and the API.
 
 ```bash
+# 1. Build the web app (repo root)
+npm install && npm run build
+
+# 2. Install and start the backend
 cd backend
 python3 -m venv .venv
 . .venv/bin/activate            # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.example .env            # then edit; see CONFIGURATION.md
 pytest tests.py -q
-uvicorn api_server:app --reload --port 8000
+uvicorn api_server:app --port 8000
 ```
 
-- API docs: http://localhost:8000/docs
-- Analytics dashboard: http://localhost:8000/admin
+3. Open **http://localhost:8000/admin**. The first visit asks you to create the admin account. In production, either set `ADMIN_SETUP_TOKEN` and enter it on that screen, or create the account on the server with `python manage.py create-admin`.
+4. Go to **Employees → Invite employees**, add one person or paste a list, and send each employee their link (**Copy link** or **Email**).
+5. When an employee submits, their row shows **Completed** and **View report** opens the report. Employees only ever see a "submitted" confirmation.
 
-The spec listed pandas and numpy. They aren't needed, because analytics use SQL aggregates and the statistics are a few lines of standard-library code. That keeps the install small.
+API docs are at http://localhost:8000/docs.
 
-## Connect the candidate frontend
+### Developing the frontend
+
+Run the backend as above, then `npm run dev` in the repo root and open http://localhost:5173/admin. Vite forwards `/api` to the backend, so sign-in cookies work the same as in production.
+
+### Admin accounts from the command line
 
 ```bash
-# repo root
-echo "VITE_ASSESSMENT_API_URL=http://localhost:8000" > .env.local
-npm install && npm run dev      # http://localhost:5173
+python manage.py create-admin          # prompts for email, name and password
+python manage.py reset-password EMAIL  # forgotten password; signs that admin out everywhere
+python manage.py list-admins
 ```
-
-When a candidate finishes, the completion page POSTs their answers to `/api/assess` once. It shows whether the server received them and offers a retry if it didn't. Without the variable, the frontend works offline as before. Make sure the frontend's origin is listed in `CORS_ORIGINS`.
 
 ## Enabling AI analysis
 
-**From the dashboard (recommended).** Open `/admin` and enter the dashboard admin key. In **AI provider**, pick a provider (Anthropic, NVIDIA NIM, OpenAI, Google Gemini, Groq, Mistral, DeepSeek, Together, OpenRouter, Fireworks, xAI, Perplexity, Ollama or a custom OpenAI-compatible URL). Paste the API key, click **Fetch models**, choose one, and click **Save & test connection**.
+**From the admin console (recommended).** Sign in at `/admin` and go to **Settings → AI provider**. There, pick a provider (Anthropic, NVIDIA NIM, OpenAI, Google Gemini, Groq, Mistral, DeepSeek, Together, OpenRouter, Fireworks, xAI, Perplexity, Ollama or a custom OpenAI-compatible URL). Paste the API key, click **Fetch models**, choose one, and click **Save & test connection**.
 
 **From environment variables:** `ANTHROPIC_API_KEY` for Claude, or `LLM_PROVIDER` + `LLM_API_KEY` + `LLM_MODEL` for anything else. For example, NVIDIA NIM:
 
@@ -52,12 +61,13 @@ This writes to the database cache, so running servers and workers pick the text 
 
 ## Production checklist
 
-1. Set `APP_ENV=production`. The server then refuses to start without the next two settings.
-2. Set `RESPONSE_ENCRYPTION_KEY`, generated with `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`. Store it in your secret manager: losing it makes stored answers unreadable.
-3. Set `ADMIN_API_KEY` to a long random string.
-4. Set `DATABASE_URL` to a managed Postgres database (`pip install "psycopg[binary]"`). SQLite is fine for a single instance at low volume.
-5. Run with multiple workers behind HTTPS, e.g. `uvicorn api_server:app --host 0.0.0.0 --port 8000 --workers 4`. The LLM cache is shared through the database, so workers reuse each other's generations.
-6. Replace the provisional scoring key and calibrate norms (see ARCHITECTURE.md) before scores inform decisions.
-7. Back up the database and keep the encryption key separate from the backups.
+1. Set `APP_ENV=production` and serve over HTTPS (session cookies are then marked `Secure`).
+2. Set `RESPONSE_ENCRYPTION_KEY`, generated with `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`. It encrypts stored answers, employee link tokens and AI provider keys. Keep it in your secret manager: losing it makes that data unreadable.
+3. Set `PUBLIC_BASE_URL` (e.g. `https://assess.example.com`) so employee links use your public address even behind a proxy.
+4. Create the first admin with `python manage.py create-admin`, or set `ADMIN_SETUP_TOKEN` for browser setup.
+5. Set `DATABASE_URL` to a managed Postgres database (`pip install "psycopg[binary]"`). SQLite is fine for a single instance at low volume.
+6. Run with multiple workers, e.g. `uvicorn api_server:app --host 0.0.0.0 --port 8000 --workers 4`. Sessions, invitations and the LLM cache live in the database, so any worker can serve any request. The login rate limiter is per worker, so put a reverse-proxy rate limit on `/api/auth/login` as well.
+7. Replace the provisional scoring key and calibrate norms (see ARCHITECTURE.md) before scores inform decisions.
+8. Back up the database, and keep the encryption key separate from the backups.
 
 `Base.metadata.create_all()` creates tables on startup. For schema changes after launch, add Alembic migrations.

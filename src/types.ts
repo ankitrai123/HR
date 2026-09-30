@@ -34,10 +34,3 @@ export interface RequiredDocument {
   optional?: boolean;
 }
 
-export interface CandidateProfile {
-  name: string;
-  email: string;
-  candidateId: string;
-  role: string;
-  organization: string;
-}

@@ -7,23 +7,25 @@ from __future__ import annotations
 
 import logging
 import secrets
-from pathlib import Path
+import uuid
+from datetime import timedelta
 from typing import Any, Literal
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
+from fastapi import Cookie, Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, Response
-from pydantic import BaseModel, Field
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, Response
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, EmailStr, Field
 
 import exporters
+from auth import SESSION_COOKIE, SESSION_TTL, AdminIdentity, AuthService
 from config import Settings, settings as default_settings
-from database_models import Assessment, Database, DatabaseCacheStore
+from database_models import Assessment, Database, DatabaseCacheStore, Invitation, as_utc, utcnow
 from hybrid_assessment_engine import (AssessmentInput, HybridReportGenerator, HybridScoringEngine,
                                       LLMInterpretationCache, public_report)
 from llm_providers import PROVIDERS, LLMUnavailable, build_provider, catalog, mask_key
 
 log = logging.getLogger("assessment.api")
-ADMIN_PAGE = Path(__file__).resolve().parent / "static" / "admin.html"
 
 
 class AssessRequest(BaseModel):
@@ -61,6 +63,50 @@ TEST_SCHEMA = {"type": "object", "properties": {"ok": {"type": "boolean"}}, "req
                "additionalProperties": False}
 
 
+class SetupRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+    email: EmailStr
+    password: str = Field(min_length=1, max_length=200)
+    setup_token: str | None = None
+
+
+class LoginRequest(BaseModel):
+    email: str = Field(min_length=1, max_length=320)
+    password: str = Field(min_length=1, max_length=200)
+
+
+class NewAdminRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+    email: EmailStr
+    password: str = Field(min_length=1, max_length=200)
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(min_length=1, max_length=200)
+    new_password: str = Field(min_length=1, max_length=200)
+
+
+class InvitationRequest(BaseModel):
+    employee_name: str = Field(min_length=1, max_length=200)
+    email: EmailStr | None = None
+    employee_code: str | None = Field(default=None, max_length=64, description="Employee ID; generated if omitted.")
+    department: str | None = Field(default=None, max_length=120)
+    valid_days: int | None = Field(default=None, ge=1, le=90)
+
+
+class BulkInvitationRequest(BaseModel):
+    employees: list[InvitationRequest] = Field(min_length=1, max_length=500)
+    valid_days: int | None = Field(default=None, ge=1, le=90)
+
+
+class ExtendRequest(BaseModel):
+    days: int = Field(ge=1, le=90)
+
+
+class CandidateSubmission(BaseModel):
+    responses: dict[str, int | None] = Field(max_length=1000)
+
+
 class PremiumRequest(BaseModel):
     test_id: str = Field(description="Assessment id, or a test-taker id (uses their latest assessment).")
 
@@ -72,11 +118,9 @@ def create_app(cfg: Settings = default_settings, db: Database | None = None,
         raise RuntimeError("invalid configuration: " + "; ".join(problems))
     for p in problems:
         log.warning("config: %s", p)
-    if not cfg.admin_api_key:
-        log.warning("ADMIN_API_KEY not set: results, analytics and exports are unauthenticated (development only)")
-
     db = db or Database(cfg)
     db.create_all()
+    auth = AuthService(db)
     if generator is None:
         cache = LLMInterpretationCache(cfg.cache_max_entries, store=DatabaseCacheStore(db))
         generator = HybridReportGenerator(cfg=cfg, cache=cache)
@@ -86,7 +130,18 @@ def create_app(cfg: Settings = default_settings, db: Database | None = None,
                               "(Claude, NVIDIA NIM, OpenAI, Gemini and other OpenAI-compatible providers).")
     app.add_middleware(CORSMiddleware, allow_origins=list(cfg.cors_origins), allow_methods=["*"],
                        allow_headers=["*"])
-    app.state.db, app.state.generator, app.state.cfg = db, generator, cfg
+    app.state.db, app.state.generator, app.state.cfg, app.state.auth = db, generator, cfg, auth
+
+    @app.middleware("http")
+    async def security_headers(request: Request, call_next):
+        response = await call_next(request)
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("X-Frame-Options", "DENY")
+        # Employee links carry a secret token in the URL: never leak it via Referer.
+        response.headers.setdefault("Referrer-Policy", "no-referrer")
+        if request.url.path.startswith("/api/"):
+            response.headers.setdefault("Cache-Control", "no-store")
+        return response
 
     # The interpreter's initial provider (from environment variables or an
     # injected test client) is the baseline restored when the dashboard
@@ -141,9 +196,51 @@ def create_app(cfg: Settings = default_settings, db: Database | None = None,
 
     sync_llm()
 
-    def require_admin(x_api_key: str | None = Header(default=None)) -> None:
-        if cfg.admin_api_key and not (x_api_key and secrets.compare_digest(x_api_key, cfg.admin_api_key)):
-            raise HTTPException(status_code=401, detail="missing or invalid X-API-Key")
+    def require_admin(request: Request, admin_session: str | None = Cookie(default=None),
+                      x_api_key: str | None = Header(default=None),
+                      x_csrf_token: str | None = Header(default=None)) -> AdminIdentity:
+        """A signed-in admin (session cookie + CSRF header on writes), or a
+        script using ADMIN_API_KEY."""
+        if admin_session:
+            identity = auth.resolve_session(admin_session)
+            if identity is not None:
+                if request.method not in ("GET", "HEAD", "OPTIONS") and not (
+                        x_csrf_token and secrets.compare_digest(x_csrf_token, identity.csrf_token or "")):
+                    raise HTTPException(status_code=403, detail="missing or invalid CSRF token")
+                return identity
+        if x_api_key and cfg.admin_api_key and secrets.compare_digest(x_api_key, cfg.admin_api_key):
+            return AdminIdentity(None, "api-key", "API key")
+        raise HTTPException(status_code=401, detail="Please sign in.")
+
+    def set_session_cookie(response: Response, request: Request, token: str) -> None:
+        response.set_cookie(SESSION_COOKIE, token, httponly=True, samesite="strict", path="/",
+                            secure=cfg.is_production or request.url.scheme == "https",
+                            max_age=int(SESSION_TTL.total_seconds()))
+
+    def client_id(request: Request) -> str:
+        return request.client.host if request.client else "unknown"
+
+    def link_base(request: Request) -> str:
+        return cfg.public_base_url or str(request.base_url).rstrip("/")
+
+    def invitation_view(inv: Invitation, request: Request) -> dict[str, Any]:
+        return {
+            "id": inv.id, "employee_name": inv.employee_name, "email": inv.email,
+            "employee_code": inv.employee_code, "department": inv.department, "status": inv.status(),
+            "link": f"{link_base(request)}/t/{db.invitation_token(inv)}",
+            "created_at": as_utc(inv.created_at).isoformat(), "expires_at": as_utc(inv.expires_at).isoformat(),
+            "opened_at": inv.opened_at and as_utc(inv.opened_at).isoformat(),
+            "started_at": inv.started_at and as_utc(inv.started_at).isoformat(),
+            "submitted_at": inv.submitted_at and as_utc(inv.submitted_at).isoformat(),
+            "submitted_late": inv.submitted_late, "assessment_id": inv.assessment_id,
+        }
+
+    def create_invitation(body: InvitationRequest, admin: AdminIdentity, valid_days: int | None) -> Invitation:
+        inv, _ = db.create_invitation(
+            employee_name=body.employee_name.strip(), email=body.email, department=(body.department or "").strip() or None,
+            employee_code=(body.employee_code or "").strip() or f"EMP-{uuid.uuid4().hex[:8].upper()}",
+            valid_days=body.valid_days or valid_days or cfg.invitation_default_days, created_by=admin.id)
+        return inv
 
     def find_assessment(test_id: str) -> Assessment:
         a = db.get_assessment(test_id)
@@ -174,8 +271,10 @@ def create_app(cfg: Settings = default_settings, db: Database | None = None,
         return {"scale_points": cfg.scale_points,
                 "questions": [{"id": it.id, "text": it.text} for it in generator.bank.items.values()]}
 
-    @app.post("/api/assess")
+    @app.post("/api/assess", dependencies=[Depends(require_admin)])
     def assess(body: AssessRequest) -> dict[str, Any]:
+        """Score a submission directly (integrations / bulk import). Employees
+        use their personal link instead and never see results."""
         data = AssessmentInput(body.test_taker_id, body.name, body.email,
                                {k: v for k, v in body.responses.items() if v is not None})
         report = generator.standard_report(data)
@@ -314,9 +413,231 @@ def create_app(cfg: Settings = default_settings, db: Database | None = None,
         sync_llm()
         return generator.cohort_report(stats)
 
-    @app.get("/admin", response_class=HTMLResponse, include_in_schema=False)
-    def admin_page() -> str:
-        return ADMIN_PAGE.read_text(encoding="utf-8")
+    # -- Authentication ---------------------------------------------------------
+
+    def identity_view(identity: AdminIdentity) -> dict[str, Any]:
+        return {"admin": {"id": identity.id, "name": identity.name, "email": identity.email},
+                "csrf_token": identity.csrf_token}
+
+    @app.get("/api/auth/status")
+    def auth_status() -> dict[str, Any]:
+        return {"setup_required": auth.admin_count() == 0,
+                "setup_token_required": bool(cfg.admin_setup_token) or cfg.is_production,
+                "organization": cfg.organization_name}
+
+    @app.post("/api/auth/setup")
+    def setup(body: SetupRequest, request: Request, response: Response) -> dict[str, Any]:
+        """Create the first admin account (only while none exists)."""
+        if auth.admin_count() > 0:
+            raise HTTPException(status_code=409, detail="Setup is already complete. Please sign in.")
+        if cfg.is_production and not cfg.admin_setup_token:
+            raise HTTPException(status_code=403, detail="Set ADMIN_SETUP_TOKEN or run `python manage.py create-admin`.")
+        if cfg.admin_setup_token and not (body.setup_token and
+                                          secrets.compare_digest(body.setup_token, cfg.admin_setup_token)):
+            raise HTTPException(status_code=403, detail="Invalid setup token.")
+        try:
+            user = auth.create_admin(body.email, body.name, body.password)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        token, csrf = auth.create_session(user.id)
+        set_session_cookie(response, request, token)
+        log.info("first admin account created (%s)", user.email)
+        return identity_view(AdminIdentity(user.id, user.email, user.name, csrf))
+
+    @app.post("/api/auth/login")
+    def login(body: LoginRequest, request: Request, response: Response) -> dict[str, Any]:
+        email, client = body.email.strip().lower(), client_id(request)
+        if auth.limiter.blocked(email, client):
+            raise HTTPException(status_code=429, detail="Too many failed attempts. Try again in 15 minutes.")
+        user = auth.authenticate(email, body.password)
+        if user is None:
+            auth.limiter.fail(email, client)
+            raise HTTPException(status_code=401, detail="Incorrect email or password.")
+        auth.limiter.reset(email, client)
+        token, csrf = auth.create_session(user.id)
+        set_session_cookie(response, request, token)
+        return identity_view(AdminIdentity(user.id, user.email, user.name, csrf))
+
+    @app.post("/api/auth/logout")
+    def logout(response: Response, admin_session: str | None = Cookie(default=None)) -> dict[str, Any]:
+        if admin_session:
+            auth.end_session(admin_session)
+        response.delete_cookie(SESSION_COOKIE, path="/")
+        return {"ok": True}
+
+    @app.get("/api/auth/me")
+    def me(admin: AdminIdentity = Depends(require_admin)) -> dict[str, Any]:
+        return identity_view(admin)
+
+    @app.post("/api/auth/change-password")
+    def change_password(body: ChangePasswordRequest, admin: AdminIdentity = Depends(require_admin),
+                        admin_session: str | None = Cookie(default=None)) -> dict[str, Any]:
+        if admin.id is None:
+            raise HTTPException(status_code=400, detail="Sign in with an admin account to change a password.")
+        try:
+            auth.change_password(admin.id, body.current_password, body.new_password)
+        except PermissionError as exc:
+            raise HTTPException(status_code=403, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        auth.end_other_sessions(admin.id, keep_token=admin_session)
+        return {"ok": True}
+
+    # -- Admin users ----------------------------------------------------------------
+
+    @app.get("/api/admin/users", dependencies=[Depends(require_admin)])
+    def list_admins() -> dict[str, Any]:
+        return {"users": [{"id": u.id, "name": u.name, "email": u.email,
+                           "created_at": as_utc(u.created_at).isoformat(),
+                           "last_login_at": u.last_login_at and as_utc(u.last_login_at).isoformat()}
+                          for u in auth.list_admins()]}
+
+    @app.post("/api/admin/users", dependencies=[Depends(require_admin)])
+    def add_admin(body: NewAdminRequest) -> dict[str, Any]:
+        try:
+            user = auth.create_admin(body.email, body.name, body.password)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        return {"id": user.id, "name": user.name, "email": user.email}
+
+    @app.delete("/api/admin/users/{admin_id}")
+    def remove_admin(admin_id: int, admin: AdminIdentity = Depends(require_admin)) -> dict[str, Any]:
+        if admin.id == admin_id:
+            raise HTTPException(status_code=400, detail="You can't remove your own account.")
+        try:
+            auth.delete_admin(admin_id)
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        return {"ok": True}
+
+    # -- Employee links (invitations) ----------------------------------------------
+
+    @app.post("/api/admin/invitations")
+    def invite(body: InvitationRequest, request: Request, admin: AdminIdentity = Depends(require_admin)) -> dict[str, Any]:
+        return invitation_view(create_invitation(body, admin, None), request)
+
+    @app.post("/api/admin/invitations/bulk")
+    def invite_bulk(body: BulkInvitationRequest, request: Request,
+                    admin: AdminIdentity = Depends(require_admin)) -> dict[str, Any]:
+        return {"invitations": [invitation_view(create_invitation(e, admin, body.valid_days), request)
+                                for e in body.employees]}
+
+    @app.get("/api/admin/invitations", dependencies=[Depends(require_admin)])
+    def list_invitations(request: Request, status: str | None = Query(None), search: str | None = Query(None)
+                         ) -> dict[str, Any]:
+        return {"invitations": [invitation_view(i, request) for i in db.list_invitations(status, search)],
+                "counts": db.invitation_counts()}
+
+    def editable_invitation(invitation_id: str) -> Invitation:
+        inv = db.get_invitation(invitation_id)
+        if inv is None:
+            raise HTTPException(status_code=404, detail="Invitation not found.")
+        if inv.submitted_at:
+            raise HTTPException(status_code=409, detail="This employee has already completed the assessment.")
+        return inv
+
+    @app.post("/api/admin/invitations/{invitation_id}/revoke", dependencies=[Depends(require_admin)])
+    def revoke_invitation(invitation_id: str, request: Request) -> dict[str, Any]:
+        editable_invitation(invitation_id)
+        return invitation_view(db.update_invitation(invitation_id, revoked_at=utcnow()), request)
+
+    @app.post("/api/admin/invitations/{invitation_id}/extend", dependencies=[Depends(require_admin)])
+    def extend_invitation(invitation_id: str, body: ExtendRequest, request: Request) -> dict[str, Any]:
+        inv = editable_invitation(invitation_id)
+        base = max(as_utc(inv.expires_at), utcnow())
+        return invitation_view(db.update_invitation(invitation_id, expires_at=base + timedelta(days=body.days),
+                                                    revoked_at=None), request)
+
+    # -- Employee-facing endpoints (authorised by the link token only) --------------
+
+    def invitation_for_token(token: str) -> Invitation:
+        inv = db.invitation_by_token(token) if 16 <= len(token) <= 128 else None
+        if inv is None:
+            raise HTTPException(status_code=404, detail={"status": "invalid",
+                                                         "message": "This assessment link is not valid."})
+        return inv
+
+    def deadline(inv: Invitation):
+        return as_utc(inv.started_at) + timedelta(minutes=cfg.test_duration_minutes + cfg.submission_grace_minutes)
+
+    @app.get("/api/invite/{token}")
+    def open_invitation(token: str) -> dict[str, Any]:
+        """What the employee's browser needs to run the test. No scores, ever."""
+        inv = invitation_for_token(token)
+        status = inv.status()
+        info = {"status": status, "organization": cfg.organization_name,
+                "support": {"email": cfg.support_email, "phone": cfg.support_phone}}
+        if status in ("revoked", "expired", "completed"):
+            return info
+        if inv.opened_at is None:
+            inv = db.update_invitation(inv.id, opened_at=utcnow())
+        return {**info,
+                "candidate": {"name": inv.employee_name, "email": inv.email, "employee_code": inv.employee_code,
+                              "department": inv.department},
+                "window": {"opens": as_utc(inv.created_at).isoformat(), "closes": as_utc(inv.expires_at).isoformat()},
+                "started_at": inv.started_at and as_utc(inv.started_at).isoformat(),
+                "duration_minutes": cfg.test_duration_minutes}
+
+    @app.post("/api/invite/{token}/start")
+    def start_invitation(token: str) -> dict[str, Any]:
+        inv = invitation_for_token(token)
+        status = inv.status()
+        if status in ("revoked", "expired", "completed"):
+            raise HTTPException(status_code=410, detail={"status": status})
+        if inv.started_at is None:
+            inv = db.update_invitation(inv.id, started_at=utcnow())
+        return {"started_at": as_utc(inv.started_at).isoformat(), "duration_minutes": cfg.test_duration_minutes}
+
+    @app.post("/api/invite/{token}/submit")
+    def submit_invitation(token: str, body: CandidateSubmission) -> dict[str, Any]:
+        inv = invitation_for_token(token)
+        if inv.submitted_at:
+            raise HTTPException(status_code=409, detail={"status": "completed"})
+        if inv.revoked_at:
+            raise HTTPException(status_code=410, detail={"status": "revoked"})
+        # An expired link is still accepted from someone who started before it expired.
+        if inv.status() == "expired" and not (inv.started_at and utcnow() <= deadline(inv)):
+            raise HTTPException(status_code=410, detail={"status": "expired"})
+        data = AssessmentInput(inv.employee_code, inv.employee_name, inv.email,
+                               {k: v for k, v in body.responses.items() if v is not None})
+        generator.validator.normalise(data.responses)  # reject malformed input before claiming the link
+        if not db.claim_invitation_submission(inv.id):
+            raise HTTPException(status_code=409, detail={"status": "completed"})
+        late = bool(inv.started_at and utcnow() > deadline(inv))
+        report = generator.standard_report(data)
+        if late:
+            report["quality_flags"] = [*report["quality_flags"], "Submitted after the time limit."]
+        assessment_id = db.save_assessment(
+            test_taker_id=inv.employee_code, name=inv.employee_name, email=inv.email,
+            instrument=generator.bank.instrument, scale_points=cfg.scale_points,
+            responses=generator.validator.normalise(data.responses), report=public_report(report),
+            proportions=report.get("_proportions", {}),
+        )
+        db.update_invitation(inv.id, assessment_id=assessment_id, submitted_late=late)
+        return {"status": "received"}
+
+    # -- Web app (candidate links + admin console) -----------------------------------
+
+    dist = cfg.frontend_dist
+    if (dist / "assets").is_dir():
+        app.mount("/assets", StaticFiles(directory=dist / "assets"), name="assets")
+
+    def spa() -> Response:
+        index = dist / "index.html"
+        if index.is_file():
+            return FileResponse(index, headers={"Cache-Control": "no-cache"})
+        return HTMLResponse("<p>The web app hasn't been built yet. Run <code>npm run build</code> in the "
+                            "project root, then restart the server.</p>", status_code=503)
+
+    @app.get("/favicon.svg", include_in_schema=False)
+    def favicon() -> Response:
+        path = dist / "favicon.svg"
+        return FileResponse(path) if path.is_file() else Response(status_code=404)
+
+    for route in ("/", "/admin", "/admin/{rest:path}", "/t/{token}"):
+        app.add_api_route(route, spa, methods=["GET"], include_in_schema=False)
 
     return app
 

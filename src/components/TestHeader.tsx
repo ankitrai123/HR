@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { candidate } from '../data/candidate';
+import { useCandidate } from '../candidate/CandidateContext';
 import { test } from '../data/test';
 import { Brand } from './Brand';
 import { Maximize, Minimize, Settings } from './Icons';
@@ -29,6 +29,7 @@ interface Props {
 }
 
 export function TestHeader({ remainingMs, savedSecondsAgo, textSize, onTextSizeChange, onFinish }: Props) {
+  const candidate = useCandidate();
   const [isFullscreen, setIsFullscreen] = useState(() => !!document.fullscreenElement);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
@@ -57,7 +58,7 @@ export function TestHeader({ remainingMs, savedSecondsAgo, textSize, onTextSizeC
 
   return (
     <header className="test-header">
-      <Brand compact />
+      <Brand organization={candidate.organization} compact />
       <div className="test-meta">
         <strong>{candidate.name}</strong>
         <span className="test-meta-sub">

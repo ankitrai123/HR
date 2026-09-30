@@ -102,11 +102,20 @@ def candidate(seed: int, **overrides) -> AssessmentInput:
     return dataclasses.replace(base, **overrides)
 
 
-def api_client(cfg, generator=None) -> TestClient:
+ADMIN_EMAIL, ADMIN_PASSWORD = "admin@example.com", "Correct-Horse-9"
+
+
+def api_client(cfg, generator=None, login: bool = True) -> TestClient:
+    """A TestClient signed in as an admin (session cookie + CSRF header)."""
     from api_server import create_app
 
     db = Database(cfg)
-    return TestClient(create_app(cfg, db=db, generator=generator or make_generator(cfg)))
+    client = TestClient(create_app(cfg, db=db, generator=generator or make_generator(cfg)))
+    if login:
+        res = client.post("/api/auth/setup", json={"name": "Admin", "email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
+        assert res.status_code == 200, res.text
+        client.headers["X-CSRF-Token"] = res.json()["csrf_token"]
+    return client
 
 
 # ---------------------------------------------------------------------------
@@ -255,7 +264,8 @@ def test_api_key_validation(cfg):
     prod = dataclasses.replace(cfg, environment="production")
     problems = prod.validate()
     assert any("RESPONSE_ENCRYPTION_KEY" in p for p in problems)
-    assert any("ADMIN_API_KEY" in p for p in problems)
+    assert not any("ADMIN_API_KEY" in p for p in problems)  # optional now: people sign in with accounts
+    assert any("https" in p for p in dataclasses.replace(prod, public_base_url="http://x").validate())
 
 
 # ---------------------------------------------------------------------------
@@ -459,13 +469,17 @@ def test_assess_with_premium_flag_and_validation_errors(cfg):
     assert client.post("/api/assess", json=bad).status_code == 422
 
 
-def test_admin_endpoints_require_api_key(cfg):
+def test_admin_endpoints_require_sign_in_or_api_key(cfg):
     locked = dataclasses.replace(cfg, admin_api_key="admin-secret")
-    client = api_client(locked)
-    aid = client.post("/api/assess", json=assess_body(4)).json()["assessment_id"]  # candidates don't need a key
-    assert client.get(f"/api/results/{aid}").status_code == 401
+    client = api_client(locked, login=False)
+    for method, path in (("get", "/api/analytics"), ("get", "/api/results/x"), ("post", "/api/assess"),
+                         ("get", "/api/admin/invitations"), ("get", "/api/admin/llm")):
+        assert getattr(client, method)(path).status_code == 401, path
     assert client.get("/api/analytics", headers={"X-API-Key": "wrong"}).status_code == 401
     assert client.get("/api/analytics", headers={"X-API-Key": "admin-secret"}).status_code == 200
+    # Scripts can still score directly with the API key.
+    res = client.post("/api/assess", json=assess_body(4), headers={"X-API-Key": "admin-secret"})
+    assert res.status_code == 200 and res.json()["status"] == "Completed"
 
 
 def test_responses_encrypted_at_rest(cfg):
@@ -662,7 +676,7 @@ def nim_server(monkeypatch):
 
 def test_dashboard_llm_configuration_flow(cfg, nim_server):
     locked = dataclasses.replace(cfg, admin_api_key="admin-secret")
-    client = api_client(locked)
+    client = api_client(locked, login=False)
     h = {"X-API-Key": "admin-secret"}
 
     assert client.get("/api/admin/llm").status_code == 401
@@ -699,7 +713,7 @@ def test_dashboard_llm_configuration_flow(cfg, nim_server):
                                                           "base_url": "https://attacker.example/v1"})
     assert moved.status_code == 400  # no key sent -> mock rejects it
 
-    aid = client.post("/api/assess", json=assess_body(30)).json()["assessment_id"]
+    aid = client.post("/api/assess", headers=h, json=assess_body(30)).json()["assessment_id"]
     premium = client.post("/api/generate-premium-report", headers=h, json={"test_id": aid}).json()
     assert premium["premium_features"]["generated_by"]["provider"] == "nvidia"
     assert premium["premium_features"]["estimated_cost_usd"] > 0
@@ -731,3 +745,194 @@ def test_provider_from_environment(cfg):
     interp = LLMInterpreter(env_nim)
     assert interp.provider.id == "nvidia" and interp.source == "environment"
     assert LLMInterpreter(dataclasses.replace(cfg, llm_provider="nvidia")).provider is None  # no key
+
+
+# ---------------------------------------------------------------------------
+# Platform: admin accounts, employee links, candidate flow
+# ---------------------------------------------------------------------------
+
+from auth import hash_password, password_problem, verify_password  # noqa: E402
+
+
+def candidate_answers(seed: int) -> dict:
+    return {"responses": {str(k): v for k, v in random_responses(seed).items()}}
+
+
+def test_password_hashing_and_policy():
+    h = hash_password("Correct-Horse-9")
+    assert h.startswith("scrypt$") and "Correct-Horse-9" not in h
+    assert verify_password("Correct-Horse-9", h) and not verify_password("wrong", h)
+    assert hash_password("Correct-Horse-9") != h  # salted
+    assert password_problem("short1A") and password_problem("alllowercase123") and not password_problem("Good-Pass-123")
+
+
+def test_first_run_setup_login_logout(cfg):
+    client = api_client(cfg, login=False)
+    assert client.get("/api/auth/status").json()["setup_required"] is True
+    weak = client.post("/api/auth/setup", json={"name": "A", "email": "a@example.com", "password": "password"})
+    assert weak.status_code == 422
+    ok = client.post("/api/auth/setup", json={"name": "Asha", "email": "Asha@Example.com", "password": ADMIN_PASSWORD})
+    assert ok.status_code == 200 and ok.json()["admin"]["email"] == "asha@example.com"
+    cookie = ok.headers["set-cookie"].lower()
+    assert "httponly" in cookie and "samesite=strict" in cookie
+    assert client.post("/api/auth/setup", json={"name": "B", "email": "b@example.com",
+                                                "password": ADMIN_PASSWORD}).status_code == 409
+
+    csrf = ok.json()["csrf_token"]
+    assert client.get("/api/auth/me").json()["admin"]["name"] == "Asha"
+    # Writes need the CSRF token even with a valid session.
+    assert client.post("/api/admin/invitations", json={"employee_name": "X"}).status_code == 403
+    assert client.post("/api/admin/invitations", json={"employee_name": "X"},
+                       headers={"X-CSRF-Token": csrf}).status_code == 200
+
+    client.post("/api/auth/logout")
+    assert client.get("/api/auth/me").status_code == 401
+    assert client.post("/api/auth/login", json={"email": "asha@example.com", "password": "nope"}).status_code == 401
+    assert client.post("/api/auth/login", json={"email": "ASHA@example.com", "password": ADMIN_PASSWORD}).status_code == 200
+
+
+def test_setup_token_required_in_production(cfg):
+    prod = dataclasses.replace(cfg, environment="production", response_encryption_key=__import__(
+        "cryptography.fernet").fernet.Fernet.generate_key().decode(), admin_setup_token="setup-123")
+    client = api_client(prod, login=False)
+    body = {"name": "A", "email": "a@example.com", "password": ADMIN_PASSWORD}
+    assert client.post("/api/auth/setup", json=body).status_code == 403
+    assert client.post("/api/auth/setup", json={**body, "setup_token": "setup-123"}).status_code == 200
+
+
+def test_login_rate_limit(cfg):
+    client = api_client(cfg)
+    client.post("/api/auth/logout")
+    for _ in range(5):
+        assert client.post("/api/auth/login", json={"email": ADMIN_EMAIL, "password": "wrong"}).status_code == 401
+    assert client.post("/api/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}).status_code == 429
+
+
+def test_admin_user_management_and_password_change(cfg):
+    client = api_client(cfg)
+    me = client.get("/api/auth/me").json()["admin"]
+    added = client.post("/api/admin/users", json={"name": "Ravi", "email": "ravi@example.com", "password": "Another-Pass-7"})
+    assert added.status_code == 200
+    assert client.post("/api/admin/users", json={"name": "Dup", "email": "RAVI@example.com",
+                                                 "password": "Another-Pass-7"}).status_code == 422
+    assert len(client.get("/api/admin/users").json()["users"]) == 2
+    assert client.delete(f"/api/admin/users/{me['id']}").status_code == 400  # not yourself
+    assert client.delete(f"/api/admin/users/{added.json()['id']}").status_code == 200
+
+    assert client.post("/api/auth/change-password", json={"current_password": "wrong",
+                                                          "new_password": "Brand-New-Pass-1"}).status_code == 403
+    assert client.post("/api/auth/change-password", json={"current_password": ADMIN_PASSWORD,
+                                                          "new_password": "Brand-New-Pass-1"}).status_code == 200
+    client.post("/api/auth/logout")
+    assert client.post("/api/auth/login", json={"email": ADMIN_EMAIL, "password": "Brand-New-Pass-1"}).status_code == 200
+
+
+def test_employee_link_lifecycle_and_report_only_for_admin(cfg):
+    admin = api_client(cfg)
+    inv = admin.post("/api/admin/invitations", json={
+        "employee_name": "Meera Iyer", "email": "meera@example.com", "employee_code": "E-1001",
+        "department": "Engineering"}).json()
+    assert inv["status"] == "sent" and "/t/" in inv["link"] and inv["link"].startswith("http://testserver/t/")
+    token = inv["link"].rsplit("/", 1)[1]
+
+    employee = TestClient(admin.app)  # no admin cookie
+    opened = employee.get(f"/api/invite/{token}").json()
+    assert opened["status"] == "sent" and opened["candidate"]["name"] == "Meera Iyer"
+    assert "scores" not in json.dumps(opened)
+    assert employee.get("/api/invite/not-a-real-token-123456").status_code == 404
+    assert admin.get("/api/admin/invitations").json()["invitations"][0]["status"] == "opened"
+
+    started = employee.post(f"/api/invite/{token}/start").json()
+    assert started["duration_minutes"] == cfg.test_duration_minutes
+    assert employee.post(f"/api/invite/{token}/start").json()["started_at"] == started["started_at"]  # idempotent
+
+    bad = employee.post(f"/api/invite/{token}/submit", json={"responses": {"1": 9}})
+    assert bad.status_code == 422  # malformed input doesn't burn the link
+    res = employee.post(f"/api/invite/{token}/submit", json=candidate_answers(1))
+    assert res.status_code == 200 and res.json() == {"status": "received"}  # no results for the employee
+    assert employee.post(f"/api/invite/{token}/submit", json=candidate_answers(2)).status_code == 409
+    assert employee.get(f"/api/invite/{token}").json() == {
+        "status": "completed", "organization": cfg.organization_name,
+        "support": {"email": cfg.support_email, "phone": cfg.support_phone}}
+
+    # Employees can't reach any report endpoint.
+    for method, path in (("get", "/api/results/E-1001"), ("get", "/api/admin/assessments"),
+                         ("post", "/api/export/E-1001?format=pdf")):
+        assert getattr(employee, method)(path).status_code == 401
+
+    row = admin.get("/api/admin/invitations").json()["invitations"][0]
+    assert row["status"] == "completed" and row["assessment_id"]
+    report = admin.get(f"/api/results/{row['assessment_id']}").json()
+    assert report["name"] == "Meera Iyer" and len(report["scores"]) == 11
+    assert admin.post(f"/api/admin/invitations/{row['id']}/revoke").status_code == 409  # already completed
+
+
+def test_revoke_extend_and_expiry(cfg):
+    admin = api_client(cfg)
+    inv = admin.post("/api/admin/invitations", json={"employee_name": "Kiran", "valid_days": 1}).json()
+    token = inv["link"].rsplit("/", 1)[1]
+    assert inv["employee_code"].startswith("EMP-")
+
+    revoked = admin.post(f"/api/admin/invitations/{inv['id']}/revoke").json()
+    assert revoked["status"] == "revoked"
+    assert admin.get(f"/api/invite/{token}").json()["status"] == "revoked"
+    assert admin.post(f"/api/invite/{token}/submit", json=candidate_answers(3)).status_code == 410
+
+    extended = admin.post(f"/api/admin/invitations/{inv['id']}/extend", json={"days": 7}).json()
+    assert extended["status"] == "sent"  # extending also re-opens a revoked link
+
+    db = admin.app.state.db
+    from datetime import timedelta as td
+    from database_models import utcnow as now
+    db.update_invitation(inv["id"], expires_at=now() - td(minutes=1))
+    assert admin.get(f"/api/invite/{token}").json()["status"] == "expired"
+    assert admin.post(f"/api/invite/{token}/start").status_code == 410
+
+    # Someone who started before the link expired can still submit within the time limit.
+    db.update_invitation(inv["id"], started_at=now() - td(minutes=10))
+    assert admin.post(f"/api/invite/{token}/submit", json=candidate_answers(3)).status_code == 200
+
+
+def test_late_submission_is_flagged(cfg):
+    admin = api_client(cfg)
+    inv = admin.post("/api/admin/invitations", json={"employee_name": "Late Larry"}).json()
+    token = inv["link"].rsplit("/", 1)[1]
+    from datetime import timedelta as td
+    from database_models import utcnow as now
+    admin.app.state.db.update_invitation(inv["id"], started_at=now() - td(minutes=cfg.test_duration_minutes + 30))
+    assert admin.post(f"/api/invite/{token}/submit", json=candidate_answers(4)).status_code == 200
+    row = admin.get("/api/admin/invitations").json()["invitations"][0]
+    assert row["submitted_late"] is True
+    assert "Submitted after the time limit." in admin.get(f"/api/results/{row['assessment_id']}").json()["quality_flags"]
+
+
+def test_bulk_invitations_search_and_link_base(cfg):
+    branded = dataclasses.replace(cfg, public_base_url="https://assess.example.com")
+    admin = api_client(branded)
+    res = admin.post("/api/admin/invitations/bulk", json={"valid_days": 30, "employees": [
+        {"employee_name": "Anil", "email": "anil@example.com"}, {"employee_name": "Bina", "employee_code": "B-2"}]})
+    rows = res.json()["invitations"]
+    assert len(rows) == 2 and all(r["link"].startswith("https://assess.example.com/t/") for r in rows)
+    assert len({r["link"] for r in rows}) == 2
+    found = admin.get("/api/admin/invitations?search=bina").json()["invitations"]
+    assert [r["employee_name"] for r in found] == ["Bina"]
+    assert admin.get("/api/admin/invitations").json()["counts"] == {"sent": 2}
+
+    # Tokens are stored hashed + encrypted, never in plaintext.
+    from database_models import Invitation as Inv
+    token = rows[0]["link"].rsplit("/", 1)[1]
+    with admin.app.state.db.session() as s:
+        stored = s.query(Inv).first()
+        assert token not in stored.token_hash and token.encode() not in stored.token_ciphertext
+
+
+def test_security_headers_and_spa_routes(cfg, tmp_path):
+    dist = tmp_path / "dist"
+    (dist / "assets").mkdir(parents=True)
+    (dist / "index.html").write_text("<!doctype html><div id=root></div>")
+    client = api_client(dataclasses.replace(cfg, frontend_dist=dist), login=False)
+    for path in ("/", "/admin", "/admin/employees", "/t/some-token"):
+        res = client.get(path)
+        assert res.status_code == 200 and "id=root" in res.text, path
+        assert res.headers["referrer-policy"] == "no-referrer" and res.headers["x-frame-options"] == "DENY"
+    assert client.get("/api/auth/status").headers["cache-control"] == "no-store"

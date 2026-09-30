@@ -1,7 +1,7 @@
 # Architecture
 
 ```
-candidate frontend ──POST /api/assess──▶ api_server.py
+employee link /t/<token> ──POST /api/invite/<token>/submit──▶ api_server.py ◀── admin console /admin (signed-in)
                                           │
                      ┌────────────────────┴─────────────────────┐
                      ▼                                          ▼
@@ -16,6 +16,14 @@ candidate frontend ──POST /api/assess──▶ api_server.py
    │ ClaudeInterpreter → fallback    │
    └─────────────────────────────────┘
 ```
+
+## 0. Platform
+
+- **Admins** sign in with email and password (`auth.py`: scrypt hashes, server-side sessions in `admin_sessions`, CSRF tokens, a login rate limiter). The first admin comes from the one-time setup screen or `python manage.py create-admin`.
+- **Employees** don't have accounts. An admin creates an **invitation** per employee (`invitations` table), which yields a personal link `/t/<token>`. The token is 192 bits of randomness, stored only as a SHA-256 hash (for lookup) plus a Fernet-encrypted copy (so admins can copy the link again). The link moves through `sent → opened → in_progress → completed`, or `expired` / `revoked`. Submission is claimed with a single conditional `UPDATE`, so a link can only ever be submitted once.
+- **Results are admin-only.** The employee endpoints return a confirmation, never scores. Every report, export and analytics endpoint requires an admin.
+- The backend serves the built React app. `/admin/*` is the admin console, `/t/<token>` is the employee test, and responses carry `Referrer-Policy: no-referrer` so link tokens can't leak to third parties.
+- The test timer is anchored to the server-recorded start time, so it's the same on any device. Submissions after the time limit plus a grace period are accepted and flagged "late".
 
 ## 1. Scoring pipeline (deterministic)
 
@@ -81,6 +89,8 @@ Cache keys include the provider and model, so switching provider never serves an
 | `responses` | Fernet-encrypted answers + SHA-256 digest (integrity, duplicate detection) |
 | `results` | one row per dimension (raw, proportion, Sten, level, percentile) for analytics and norms |
 | `llm_cache` | generated text keyed as above, with hit counts |
+| `admin_users`, `admin_sessions` | admin accounts (scrypt hashes) and sessions (token hashes, CSRF tokens, expiry) |
+| `invitations` | employee links: hashed and encrypted token, employee details, lifecycle timestamps, linked assessment |
 | `llm_settings` | provider chosen in the dashboard: provider, model, base URL, Fernet-encrypted API key, last-4 hint, optional prices |
 
 Raw answers are never logged, and never stored unencrypted. In production, `RESPONSE_ENCRYPTION_KEY` must be set. In development, a key is generated at `data/.dev_encryption_key` (gitignored).

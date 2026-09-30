@@ -16,15 +16,16 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import secrets
 import uuid
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Iterator, Mapping
 
 from cryptography.fernet import Fernet, InvalidToken
 from sqlalchemy import (JSON, DateTime, Float, ForeignKey, Integer, LargeBinary, String, Text, create_engine,
-                        func, select)
+                        func, select, update)
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship, sessionmaker
 
 from config import Settings, settings as default_settings
@@ -131,6 +132,76 @@ class LLMSettings(Base):
     input_price_per_mtok: Mapped[float] = mapped_column(Float, default=0.0)
     output_price_per_mtok: Mapped[float] = mapped_column(Float, default=0.0)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class AdminUser(Base):
+    __tablename__ = "admin_users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String(320), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(200))
+    password_hash: Mapped[str] = mapped_column(String(200))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class AdminSession(Base):
+    """Server-side login session. Only a hash of the cookie token is stored."""
+
+    __tablename__ = "admin_sessions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    admin_id: Mapped[int] = mapped_column(ForeignKey("admin_users.id", ondelete="CASCADE"), index=True)
+    csrf_token: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class Invitation(Base):
+    """A personal assessment link sent to one employee.
+
+    The link token is looked up by SHA-256 hash; an encrypted copy lets admins
+    copy the link again later. Once submitted, the link can't be reused.
+    """
+
+    __tablename__ = "invitations"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    token_ciphertext: Mapped[bytes] = mapped_column(LargeBinary)
+    employee_name: Mapped[str] = mapped_column(String(200))
+    email: Mapped[str | None] = mapped_column(String(320), nullable=True)
+    employee_code: Mapped[str] = mapped_column(String(64), index=True)
+    department: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("admin_users.id", ondelete="SET NULL"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    opened_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    submitted_late: Mapped[bool] = mapped_column(default=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    assessment_id: Mapped[str | None] = mapped_column(ForeignKey("assessments.id"), nullable=True)
+
+    def status(self, now: datetime | None = None) -> str:
+        now = now or utcnow()
+        if self.submitted_at:
+            return "completed"
+        if self.revoked_at:
+            return "revoked"
+        if as_utc(self.expires_at) <= now:
+            return "expired"
+        if self.started_at:
+            return "in_progress"
+        if self.opened_at:
+            return "opened"
+        return "sent"
+
+
+def as_utc(dt: datetime) -> datetime:
+    """SQLite returns naive datetimes; treat them as UTC."""
+    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
 
 
 # ---------------------------------------------------------------------------
@@ -326,6 +397,68 @@ class Database:
             "sten_distribution": {int(k): v for k, v in sorted(sten_dist)},
             "llm_cache": {"persistent_entries": cache_entries, "persistent_hits": int(cache_hits)},
         }
+
+    # -- Invitations (personal assessment links) --------------------------------
+
+    def create_invitation(self, *, employee_name: str, email: str | None, employee_code: str,
+                          department: str | None, valid_days: int, created_by: int | None) -> tuple[Invitation, str]:
+        """Returns the invitation and its (secret) link token."""
+        token = secrets.token_urlsafe(24)
+        inv = Invitation(token_hash=hashlib.sha256(token.encode()).hexdigest(),
+                         token_ciphertext=self.cipher.encrypt_text(token), employee_name=employee_name,
+                         email=email, employee_code=employee_code, department=department, created_by=created_by,
+                         expires_at=utcnow() + timedelta(days=valid_days))
+        with self.session() as s:
+            s.add(inv)
+        return inv, token
+
+    def invitation_token(self, inv: Invitation) -> str:
+        return self.cipher.decrypt_text(inv.token_ciphertext)
+
+    def list_invitations(self, status: str | None = None, search: str | None = None) -> list[Invitation]:
+        with self.session() as s:
+            query = select(Invitation).order_by(Invitation.created_at.desc())
+            if search:
+                like = f"%{search.strip()}%"
+                query = query.where(Invitation.employee_name.ilike(like) | Invitation.email.ilike(like)
+                                    | Invitation.employee_code.ilike(like))
+            invitations = list(s.scalars(query))
+        if status:
+            now = utcnow()
+            invitations = [i for i in invitations if i.status(now) == status]
+        return invitations
+
+    def get_invitation(self, invitation_id: str) -> Invitation | None:
+        with self.session() as s:
+            return s.get(Invitation, invitation_id)
+
+    def invitation_by_token(self, token: str) -> Invitation | None:
+        with self.session() as s:
+            return s.scalar(select(Invitation).where(
+                Invitation.token_hash == hashlib.sha256(token.encode()).hexdigest()))
+
+    def update_invitation(self, invitation_id: str, **fields: Any) -> Invitation | None:
+        with self.session() as s:
+            inv = s.get(Invitation, invitation_id)
+            if inv is not None:
+                for key, value in fields.items():
+                    setattr(inv, key, value)
+            return inv
+
+    def claim_invitation_submission(self, invitation_id: str) -> bool:
+        """Atomically mark an invitation submitted; False if it already was."""
+        with self.session() as s:
+            result = s.execute(update(Invitation)
+                               .where(Invitation.id == invitation_id, Invitation.submitted_at.is_(None))
+                               .values(submitted_at=utcnow()))
+            return result.rowcount == 1
+
+    def invitation_counts(self) -> dict[str, int]:
+        counts: dict[str, int] = {}
+        now = utcnow()
+        for inv in self.list_invitations():
+            counts[inv.status(now)] = counts.get(inv.status(now), 0) + 1
+        return counts
 
     # -- LLM settings (admin dashboard) ---------------------------------------
 

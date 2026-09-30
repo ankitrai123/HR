@@ -1,31 +1,7 @@
-import type { CandidateProfile, RequiredDocument } from '../types';
+import type { RequiredDocument } from '../types';
 
-// Placeholder data. Replace with values from your candidate/ATS backend.
-
-export const candidate: CandidateProfile = {
-  name: 'Prateek Kumar',
-  email: 'candidate@example.com',
-  candidateId: 'CND-2026-00457',
-  role: 'Senior Software Engineer',
-  organization: 'Acme Corporation',
-};
-
-const DAY = 24 * 60 * 60 * 1000;
-const today = new Date();
-today.setHours(9, 0, 0, 0);
-
-/** Registration window. Demo default: opened today 09:00, closes in 7 days. */
-export const registrationWindow = {
-  opens: new Date(today.getTime() - DAY),
-  closes: new Date(today.getTime() + 7 * DAY),
-};
-
-export const offerOverview = [
-  { label: 'Position', value: 'Senior Software Engineer' },
-  { label: 'Location', value: 'Bengaluru (Hybrid)' },
-  { label: 'Employment type', value: 'Full-time, permanent' },
-  { label: 'Compensation', value: 'Shared after assessment review' },
-];
+// Platform-wide content shown to every employee. Per-person details come
+// from their personal link (see candidate/CandidateContext.tsx).
 
 export const guidelines = [
   'The assessment is a personality inventory. There are no right or wrong answers — respond honestly.',
@@ -44,7 +20,3 @@ export const requiredDocuments: RequiredDocument[] = [
   { id: 'passport', label: 'Passport', detail: 'If available', optional: true },
 ];
 
-export const support = {
-  email: 'support@example.com',
-  phone: '+91 80 0000 0000',
-};

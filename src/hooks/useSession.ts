@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { test } from '../data/test';
 import type { Stage } from '../types';
 
@@ -14,8 +14,8 @@ export interface SessionState {
   startedAt: number | null;
   submittedAt: number | null;
   submitReason: 'manual' | 'timeout' | null;
-  /** Server-side scoring id once the backend has accepted the submission. */
-  serverAssessmentId: string | null;
+  /** True once the backend has confirmed it received the submission. */
+  serverReceived: boolean;
 }
 
 export type SessionAction =
@@ -23,16 +23,17 @@ export type SessionAction =
   | { type: 'goTo'; stage: Stage }
   | { type: 'systemCheckPassed' }
   | { type: 'inputCheckPassed' }
-  | { type: 'startTest' }
+  | { type: 'startTest'; startedAt: number }
+  | { type: 'syncStartedAt'; startedAt: number }
   | { type: 'answer'; questionId: number; option: number }
   | { type: 'clearAnswer'; questionId: number }
   | { type: 'toggleRevisit'; questionId: number }
   | { type: 'setIndex'; index: number }
   | { type: 'submit'; reason: 'manual' | 'timeout' }
-  | { type: 'serverAccepted'; assessmentId: string }
+  | { type: 'serverAccepted' }
   | { type: 'reset' };
 
-const STORAGE_KEY = `psychometric:${test.testId}:session`;
+const storageKey = (token: string) => `psychometric:${test.testId}:${token}`;
 
 const initialState: SessionState = {
   stage: 'registration',
@@ -45,7 +46,7 @@ const initialState: SessionState = {
   startedAt: null,
   submittedAt: null,
   submitReason: null,
-  serverAssessmentId: null,
+  serverReceived: false,
 };
 
 function reducer(state: SessionState, action: SessionAction): SessionState {
@@ -66,7 +67,9 @@ function reducer(state: SessionState, action: SessionAction): SessionState {
     case 'inputCheckPassed':
       return { ...state, inputCheckPassed: true };
     case 'startTest':
-      return { ...state, stage: 'test', startedAt: state.startedAt ?? Date.now() };
+      return { ...state, stage: 'test', startedAt: action.startedAt };
+    case 'syncStartedAt':
+      return { ...state, startedAt: action.startedAt };
     case 'answer':
       return { ...state, answers: { ...state.answers, [action.questionId]: action.option } };
     case 'clearAnswer': {
@@ -89,15 +92,15 @@ function reducer(state: SessionState, action: SessionAction): SessionState {
       if (state.stage !== 'test') return state;
       return { ...state, stage: 'completed', submittedAt: Date.now(), submitReason: action.reason };
     case 'serverAccepted':
-      return { ...state, serverAssessmentId: action.assessmentId };
+      return { ...state, serverReceived: true };
     case 'reset':
       return initialState;
   }
 }
 
-function load(): SessionState {
+function load(token: string): SessionState {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey(token));
     if (raw) return { ...initialState, ...JSON.parse(raw) };
   } catch {
     // Storage unavailable or corrupt: start fresh.
@@ -106,23 +109,27 @@ function load(): SessionState {
 }
 
 /**
- * Candidate session state, auto-saved to localStorage on every change so a
- * refresh resumes where the candidate left off (timer included).
+ * Candidate session state for one personal link, auto-saved to localStorage
+ * on every change so a refresh resumes where the candidate left off.
  */
-export function useSession() {
-  const [state, dispatch] = useReducer(reducer, undefined, load);
-  const [lastSavedAt, setLastSavedAt] = useState(() => Date.now());
+export function useSession(token: string) {
+  const [state, dispatch] = useReducer(reducer, token, load);
+  // A ref, not state: a setState here would force an extra synchronous render
+  // on every key press, which trips React's nested-update limit when
+  // answering quickly. The test page re-renders each second for its timer,
+  // so "Saved: N seconds ago" stays current.
+  const lastSavedAt = useRef(Date.now());
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      setLastSavedAt(Date.now());
+      localStorage.setItem(storageKey(token), JSON.stringify(state));
+      lastSavedAt.current = Date.now();
     } catch {
       // Quota exceeded or storage blocked; state still lives in memory.
     }
-  }, [state]);
+  }, [state, token]);
 
-  return { state, dispatch, lastSavedAt };
+  return { state, dispatch, lastSavedAt: lastSavedAt.current };
 }
 
 /** Re-renders every `intervalMs` and returns the current time. */

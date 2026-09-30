@@ -55,8 +55,28 @@ Model-specific behaviour is handled automatically: `effort` is omitted for Haiku
 | Variable | Default | Notes |
 |---|---|---|
 | `RESPONSE_ENCRYPTION_KEY` | – | Fernet key for answers at rest. Required in production; in development a key is generated at `data/.dev_encryption_key` |
-| `ADMIN_API_KEY` | – | Required header `X-API-Key` for results, exports, analytics and norms. Required in production |
+| `ADMIN_SETUP_TOKEN` | – | Needed to create the first admin from the browser in production (or use `python manage.py create-admin`) |
+| `ADMIN_API_KEY` | – | Optional. Lets scripts call admin endpoints with the `X-API-Key` header instead of signing in |
+
+## Platform
+
+| Variable | Default | Notes |
+|---|---|---|
+| `PUBLIC_BASE_URL` | the address the admin is using | Base of employee links, e.g. `https://assess.example.com` |
+| `ORGANIZATION_NAME` | `Acme Corporation` | Shown to employees and in the admin console |
+| `SUPPORT_EMAIL` / `SUPPORT_PHONE` | placeholders | Help contacts shown to employees |
+| `INVITATION_DEFAULT_DAYS` | `14` | Default link validity (admins can choose 3–90 days per invite) |
+| `TEST_DURATION_MINUTES` | `45` | Timer length; the server records the start time |
+| `SUBMISSION_GRACE_MINUTES` | `5` | Submissions later than the timer plus this are accepted but flagged "late" |
+| `FRONTEND_DIST` | `../dist` | Built web app served at `/`, `/admin` and `/t/<token>` |
 
 ## Security of provider keys
 
-Keys pasted in the dashboard are sent only to the admin API (protected by `ADMIN_API_KEY`), stored Fernet-encrypted with `RESPONSE_ENCRYPTION_KEY`, and never returned by any endpoint. The dashboard only shows the last four characters. A saved key is only reused for the same provider and base URL, so it can't be redirected to another server. The `custom` and `ollama` options let an admin point the server at any URL, so keep `ADMIN_API_KEY` secret.
+Keys pasted in the admin console are sent only to the admin API (signed-in admins only), stored Fernet-encrypted with `RESPONSE_ENCRYPTION_KEY`, and never returned by any endpoint. The dashboard only shows the last four characters. A saved key is only reused for the same provider and base URL, so it can't be redirected to another server. The `custom` and `ollama` options let an admin point the server at any URL, so only give admin accounts to people you trust with that.
+
+## Accounts and sessions
+
+- Passwords are hashed with scrypt, and must be at least 10 characters with mixed case and a number.
+- Signing in creates a server-side session: an HttpOnly, `SameSite=Strict` cookie that expires after 12 hours of inactivity. Writes also require the per-session CSRF token that the admin app sends as `X-CSRF-Token`.
+- Five failed sign-ins for the same email and address lock that combination out for 15 minutes.
+- Changing a password signs out the admin's other sessions.

@@ -97,8 +97,25 @@ class Settings:
     # Fernet key used to encrypt stored responses at rest.
     response_encryption_key: str | None = None
     dev_key_path: Path = DATA_DIR / ".dev_encryption_key"
-    # When set, every endpoint except POST /api/assess requires X-API-Key.
+    # Optional machine access (scripts / integrations) via the X-API-Key
+    # header. People sign in with admin accounts instead.
     admin_api_key: str | None = None
+    # Required to create the first admin account from the browser in
+    # production (or use `python manage.py create-admin`).
+    admin_setup_token: str | None = None
+
+    # --- Platform ------------------------------------------------------------
+    # Base URL used in employee links, e.g. https://assess.example.com.
+    # Defaults to the address the admin is using.
+    public_base_url: str | None = None
+    organization_name: str = "Acme Corporation"
+    support_email: str = "support@example.com"
+    support_phone: str = "+91 80 0000 0000"
+    invitation_default_days: int = 14
+    # Minutes allowed after the timer ends before a submission is marked late.
+    submission_grace_minutes: int = 5
+    test_duration_minutes: int = 45
+    frontend_dist: Path = BASE_DIR.parent / "dist"
     cors_origins: tuple[str, ...] = field(default_factory=lambda: ("http://localhost:5173",))
 
     @property
@@ -126,8 +143,8 @@ class Settings:
         if self.is_production:
             if not self.response_encryption_key:
                 problems.append("RESPONSE_ENCRYPTION_KEY is required in production")
-            if not self.admin_api_key:
-                problems.append("ADMIN_API_KEY is required in production")
+            if self.public_base_url and not self.public_base_url.startswith("https://"):
+                problems.append("PUBLIC_BASE_URL should use https:// in production")
         return problems
 
 
@@ -166,6 +183,15 @@ def load_settings() -> Settings:
         database_url=_env("DATABASE_URL", f"sqlite:///{DATA_DIR / 'assessments.db'}") or "",
         response_encryption_key=_env("RESPONSE_ENCRYPTION_KEY"),
         admin_api_key=_env("ADMIN_API_KEY"),
+        admin_setup_token=_env("ADMIN_SETUP_TOKEN"),
+        public_base_url=(_env("PUBLIC_BASE_URL") or "").rstrip("/") or None,
+        organization_name=_env("ORGANIZATION_NAME", "Acme Corporation") or "Acme Corporation",
+        support_email=_env("SUPPORT_EMAIL", "support@example.com") or "support@example.com",
+        support_phone=_env("SUPPORT_PHONE", "+91 80 0000 0000") or "+91 80 0000 0000",
+        invitation_default_days=_env_int("INVITATION_DEFAULT_DAYS", 14),
+        submission_grace_minutes=_env_int("SUBMISSION_GRACE_MINUTES", 5),
+        test_duration_minutes=_env_int("TEST_DURATION_MINUTES", 45),
+        frontend_dist=Path(_env("FRONTEND_DIST", str(BASE_DIR.parent / "dist"))),
         cors_origins=tuple(o.strip() for o in origins.split(",") if o.strip()),
     )
 

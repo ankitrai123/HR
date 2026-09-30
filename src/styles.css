@@ -647,3 +647,9 @@ kbd {
   .tooltip { left: auto; right: -8px; transform: none; }
   .nav-controls { flex: 1 1 100%; flex-wrap: wrap; margin-left: 0; }
 }
+
+/* ---------- Link states & submission ---------- */
+.spinner-lg { width: 28px; height: 28px; border-width: 3px; margin: 0; }
+.complete-badge.is-warning { background: var(--warning-soft); color: var(--warning); }
+.verify-error { text-align: right; margin-top: 10px; }
+.sync-failed { display: flex; flex-direction: column; align-items: center; gap: 10px; }
