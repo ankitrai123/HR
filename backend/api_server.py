@@ -114,7 +114,7 @@ class PremiumRequest(BaseModel):
 def create_app(cfg: Settings = default_settings, db: Database | None = None,
                generator: HybridReportGenerator | None = None) -> FastAPI:
     problems = cfg.validate()
-    if problems and cfg.is_production:
+    if problems and (cfg.is_production or cfg.on_vercel):
         raise RuntimeError("invalid configuration: " + "; ".join(problems))
     for p in problems:
         log.warning("config: %s", p)

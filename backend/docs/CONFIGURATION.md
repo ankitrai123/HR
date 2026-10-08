@@ -7,7 +7,7 @@ Settings are read from environment variables. A `backend/.env` file is also load
 | Variable | Default | Notes |
 |---|---|---|
 | `APP_ENV` | `development` | `production` enforces the security settings below |
-| `DATABASE_URL` | `sqlite:///backend/data/assessments.db` | Any SQLAlchemy URL |
+| `DATABASE_URL` | `sqlite:///backend/data/assessments.db` | Any SQLAlchemy URL. `postgres://` and `postgresql://` URLs use the psycopg driver. Required on Vercel (see INSTALLATION.md) |
 | `CORS_ORIGINS` | `http://localhost:5173` | Comma-separated frontend origins |
 
 ## Instrument & scoring
@@ -54,7 +54,7 @@ Model-specific behaviour is handled automatically: `effort` is omitted for Haiku
 
 | Variable | Default | Notes |
 |---|---|---|
-| `RESPONSE_ENCRYPTION_KEY` | – | Fernet key for answers at rest. Required in production; in development a key is generated at `data/.dev_encryption_key` |
+| `RESPONSE_ENCRYPTION_KEY` | – | Fernet key for answers at rest. Required in production and on Vercel; in local development a key is generated at `data/.dev_encryption_key` |
 | `ADMIN_SETUP_TOKEN` | – | Needed to create the first admin from the browser in production (or use `python manage.py create-admin`) |
 | `ADMIN_API_KEY` | – | Optional. Lets scripts call admin endpoints with the `X-API-Key` header instead of signing in |
 

@@ -24,7 +24,7 @@ pip install -r requirements.txt
 uvicorn api_server:app --port 8000     # then open http://localhost:8000/admin
 ```
 
-The first visit to `/admin` creates the admin account. Then open **Employees → Invite employees**, create a link, and send it to the employee. Full setup, production checklist and configuration are in [`backend/docs/INSTALLATION.md`](backend/docs/INSTALLATION.md).
+The first visit to `/admin` creates the admin account. Then open **Employees → Invite employees**, create a link, and send it to the employee. Full setup, production checklist and configuration are in [`backend/docs/INSTALLATION.md`](backend/docs/INSTALLATION.md), including how to [deploy on Vercel](backend/docs/INSTALLATION.md#deploy-on-vercel).
 
 For frontend development, keep the backend running and use `npm run dev` (http://localhost:5173). It forwards `/api` to the backend.
 

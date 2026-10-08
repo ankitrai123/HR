@@ -17,7 +17,7 @@ python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
 
 python example_usage.py          # score the sample candidate, export txt/json/pdf to output/
-pytest tests.py -q               # 50 tests; no API key or network needed
+pytest tests.py -q               # 54 tests; no API key or network needed (TEST_DATABASE_URL=postgresql://... runs them on Postgres)
 python benchmark.py              # latency + cache hit rate on 1,000 simulated candidates
 uvicorn api_server:app --reload  # http://localhost:8000/admin (build the web app first: npm run build in the repo root)
 ```
