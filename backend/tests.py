@@ -6,7 +6,9 @@ requests and returns canned structured output.
 from __future__ import annotations
 
 import dataclasses
+import importlib.util
 import json
+import os
 import random
 import statistics
 import threading
@@ -20,8 +22,8 @@ import httpx
 import pytest
 from fastapi.testclient import TestClient
 
-from config import load_settings, validate_api_key_format
-from database_models import Database, DatabaseCacheStore, Response
+from config import load_settings, normalize_database_url, validate_api_key_format
+from database_models import Base, Database, DatabaseCacheStore, Response
 from llm_providers import AnthropicProvider
 from hybrid_assessment_engine import (INTERPRETATIONS, AssessmentInput, ClaudeInterpreter, HybridReportGenerator, LLMInterpreter,
                                       HybridScoringEngine, LLMInterpretationCache, QuestionBank, ResponseValidator,
@@ -39,11 +41,19 @@ FRONTEND_TEST_JSON = ROOT.parent / "src" / "data" / "test.json"
 @pytest.fixture
 def cfg(tmp_path):
     base = load_settings()
-    return dataclasses.replace(
-        base, environment="test", database_url=f"sqlite:///{tmp_path / 'test.db'}",
+    # Set TEST_DATABASE_URL (e.g. postgresql://user@localhost/test) to run the
+    # suite against Postgres; its tables are dropped before every test.
+    test_db = os.environ.get("TEST_DATABASE_URL")
+    settings = dataclasses.replace(
+        base, environment="test", database_url=test_db or f"sqlite:///{tmp_path / 'test.db'}",
         dev_key_path=tmp_path / "key", norms_path=tmp_path / "no-norms.json",
-        anthropic_api_key=None, admin_api_key=None, response_encryption_key=None,
+        anthropic_api_key=None, admin_api_key=None, response_encryption_key=None, on_vercel=False,
     )
+    if test_db:
+        engine = Database(settings).engine
+        Base.metadata.drop_all(engine)
+        engine.dispose()
+    return settings
 
 
 @pytest.fixture
@@ -936,3 +946,73 @@ def test_security_headers_and_spa_routes(cfg, tmp_path):
         assert res.status_code == 200 and "id=root" in res.text, path
         assert res.headers["referrer-policy"] == "no-referrer" and res.headers["x-frame-options"] == "DENY"
     assert client.get("/api/auth/status").headers["cache-control"] == "no-store"
+
+
+# ---------------------------------------------------------------------------
+# Vercel deployment
+# ---------------------------------------------------------------------------
+
+
+def load_vercel_entrypoint():
+    spec = importlib.util.spec_from_file_location("vercel_index", ROOT.parent / "api" / "index.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_database_url_forms_are_normalised():
+    assert normalize_database_url("postgres://u:p@h/db?sslmode=require") == "postgresql+psycopg://u:p@h/db?sslmode=require"
+    assert normalize_database_url("postgresql://u:p@h/db") == "postgresql+psycopg://u:p@h/db"
+    for url in ("postgresql+psycopg://u@h/db", "sqlite:///x.db"):
+        assert normalize_database_url(url) == url
+
+
+def test_vercel_requires_postgres_and_encryption_key(cfg):
+    from api_server import create_app
+
+    on_vercel = dataclasses.replace(cfg, on_vercel=True, database_url="sqlite:///unused.db")
+    problems = " ".join(on_vercel.validate())
+    assert "DATABASE_URL is not set" in problems and "RESPONSE_ENCRYPTION_KEY is not set" in problems
+    with pytest.raises(RuntimeError, match="DATABASE_URL"):
+        create_app(on_vercel)  # never falls back to SQLite on Vercel
+    ok = dataclasses.replace(on_vercel, database_url="postgresql+psycopg://u:p@db.example.com/app",
+                             response_encryption_key="k" * 43 + "=")
+    assert ok.validate() == []
+
+
+def test_vercel_engine_does_not_pool_connections(cfg):
+    from cryptography.fernet import Fernet
+    from sqlalchemy.pool import NullPool
+
+    vercel = dataclasses.replace(cfg, on_vercel=True, response_encryption_key=Fernet.generate_key().decode())
+    db = Database(vercel, url="postgres://u:p@db.example.com/app")  # no connection is made here
+    assert isinstance(db.engine.pool, NullPool) and db.engine.dialect.driver == "psycopg"
+
+
+def test_vercel_entrypoint_reports_startup_errors_then_serves_api(cfg):
+    index = load_vercel_entrypoint()
+    attempts = []
+
+    def broken():
+        attempts.append(1)
+        raise RuntimeError("invalid configuration: DATABASE_URL is not set")
+
+    index._build = broken
+    client = TestClient(index.app)
+    res = client.get("/api/auth/status")
+    assert res.status_code == 503 and "DATABASE_URL is not set" in res.json()["detail"]
+    client.get("/health")
+    assert len(attempts) == 2  # retried on the next request, not cached as broken
+
+    def db_down():
+        raise OSError("connection refused to secret-host")
+
+    index._build = db_down
+    detail = client.get("/api/auth/status").json()["detail"]
+    assert "DATABASE_URL" in detail and "secret-host" not in detail
+
+    from api_server import create_app
+
+    index._build = lambda: create_app(cfg, db=Database(cfg), generator=make_generator(cfg))
+    assert client.get("/api/auth/status").json()["setup_required"] is True
+    assert client.get("/health").json()["status"] == "ok"

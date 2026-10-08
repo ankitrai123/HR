@@ -26,9 +26,11 @@ from typing import Any, Iterator, Mapping
 from cryptography.fernet import Fernet, InvalidToken
 from sqlalchemy import (JSON, DateTime, Float, ForeignKey, Integer, LargeBinary, String, Text, create_engine,
                         func, select, update)
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship, sessionmaker
+from sqlalchemy.pool import NullPool
 
-from config import Settings, settings as default_settings
+from config import Settings, normalize_database_url, settings as default_settings
 
 log = logging.getLogger("assessment.db")
 
@@ -217,8 +219,8 @@ class ResponseCipher:
     def from_settings(cls, cfg: Settings) -> "ResponseCipher":
         if cfg.response_encryption_key:
             return cls(cfg.response_encryption_key)
-        if cfg.is_production:
-            raise RuntimeError("RESPONSE_ENCRYPTION_KEY must be set in production")
+        if cfg.is_production or cfg.on_vercel:
+            raise RuntimeError("RESPONSE_ENCRYPTION_KEY must be set in production and on Vercel")
         # Development convenience: a key persisted next to the database so
         # data stays readable across restarts. Never used in production.
         path = cfg.dev_key_path
@@ -272,14 +274,30 @@ class StoredLLMSettings:
 
 class Database:
     def __init__(self, cfg: Settings = default_settings, url: str | None = None):
-        url = url or cfg.database_url
-        connect_args = {"check_same_thread": False} if url.startswith("sqlite") else {}
-        self.engine = create_engine(url, connect_args=connect_args, future=True)
+        url = normalize_database_url(url or cfg.database_url)
+        if url.startswith("sqlite"):
+            self.engine = create_engine(url, connect_args={"check_same_thread": False}, future=True)
+        elif cfg.on_vercel:
+            # Serverless: instances freeze between requests and scale out, so
+            # don't hold connections open; use the provider's pooler (Neon's
+            # -pooler host) instead. PgBouncer-style poolers can't keep
+            # server-side prepared statements, so psycopg mustn't create them.
+            connect_args = {"prepare_threshold": None} if url.startswith("postgresql+psycopg") else {}
+            self.engine = create_engine(url, poolclass=NullPool, connect_args=connect_args, future=True)
+        else:
+            self.engine = create_engine(url, pool_pre_ping=True, pool_size=5, max_overflow=5, future=True)
         self.SessionLocal = sessionmaker(self.engine, expire_on_commit=False)
         self.cipher = ResponseCipher.from_settings(cfg)
 
     def create_all(self) -> None:
-        Base.metadata.create_all(self.engine)
+        """Create missing tables (existing ones are left alone)."""
+        try:
+            Base.metadata.create_all(self.engine)
+        except SQLAlchemyError:
+            # Two cold starts racing to create the same table: the loser sees a
+            # duplicate-object error, and by now the tables exist.
+            log.warning("create_all failed once, retrying", exc_info=True)
+            Base.metadata.create_all(self.engine)
 
     @contextmanager
     def session(self) -> Iterator[Session]:
@@ -388,9 +406,9 @@ class Database:
         return {
             "assessments": {"total": total, "by_status": by_status, "by_quality": by_quality,
                             "premium_reports": premium,
-                            "avg_scoring_time_ms": round(avg_ms, 2) if avg_ms is not None else None},
+                            "avg_scoring_time_ms": round(float(avg_ms), 2) if avg_ms is not None else None},
             "dimensions": {
-                dim: {"n": n, "mean_sten": round(mean, 2), "min_sten": lo, "max_sten": hi,
+                dim: {"n": n, "mean_sten": round(float(mean), 2), "min_sten": lo, "max_sten": hi,
                       "levels": level_map.get(dim, {})}
                 for dim, n, mean, lo, hi in dims
             },

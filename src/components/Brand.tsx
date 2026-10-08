@@ -14,7 +14,7 @@ export function Brand({ organization, compact = false, subtitle = 'Talent Assess
       </span>
       <span className="brand-name">
         {organization}
-        {!compact && <small>{subtitle}</small>}
+        {!compact && subtitle !== organization && <small>{subtitle}</small>}
       </span>
       {!compact && (
         <>

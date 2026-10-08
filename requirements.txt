@@ -1,0 +1,10 @@
+# Runtime dependencies of the API. Vercel installs these for api/index.py;
+# for local development and tests use backend/requirements.txt.
+anthropic>=1.8,<2
+fastapi>=0.115
+pydantic[email]>=2.7
+sqlalchemy>=2.0
+psycopg[binary]>=3.2   # Postgres (DATABASE_URL); SQLite needs no driver
+cryptography>=42
+fpdf2>=2.7
+httpx>=0.27     # OpenAI-compatible providers (NVIDIA NIM, OpenAI, Gemini, ...)

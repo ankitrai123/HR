@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { ApiError } from '../api';
 import { Brand } from '../components/Brand';
 import { FileText, Home, LogOut, Settings, Users } from '../components/Icons';
 import { Link, navigate, usePathname } from '../router';
@@ -58,10 +59,13 @@ export function AdminApp() {
         } catch {
           setAuth({ kind: 'login' });
         }
-      } catch {
+      } catch (err) {
         setAuth({
           kind: 'error',
-          message: 'Can’t reach the server. Check your connection and reload.',
+          // A 503 carries the server's reason (e.g. missing environment variables).
+          message: err instanceof ApiError && err.status === 503
+            ? err.message
+            : 'Can’t reach the server. Check your connection and reload.',
         });
       }
     })();

@@ -47,6 +47,15 @@ def _env_bool(name: str, default: bool) -> bool:
     return (_env(name, str(default)) or "").lower() in ("1", "true", "yes", "on")
 
 
+def normalize_database_url(url: str) -> str:
+    """Accept the postgres:// and postgresql:// URLs that Vercel/Neon, Heroku and
+    others inject, and use the psycopg (v3) driver for them."""
+    for prefix in ("postgres://", "postgresql://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url[len(prefix):]
+    return url
+
+
 @dataclass(frozen=True)
 class Settings:
     environment: str = "development"
@@ -94,6 +103,9 @@ class Settings:
 
     # --- Persistence & security --------------------------------------------
     database_url: str = f"sqlite:///{DATA_DIR / 'assessments.db'}"
+    # True on Vercel (VERCEL=1): a read-only, ephemeral filesystem, so SQLite
+    # and the generated development key can't be used.
+    on_vercel: bool = False
     # Fernet key used to encrypt stored responses at rest.
     response_encryption_key: str | None = None
     dev_key_path: Path = DATA_DIR / ".dev_encryption_key"
@@ -140,7 +152,14 @@ class Settings:
             problems.append("LLM_EFFORT must be one of low|medium|high|xhigh|max")
         if self.anthropic_api_key is not None and not validate_api_key_format(self.anthropic_api_key):
             problems.append("ANTHROPIC_API_KEY does not look like an Anthropic API key (sk-ant-...)")
-        if self.is_production:
+        if self.on_vercel:
+            if self.database_url.startswith("sqlite"):
+                problems.append("DATABASE_URL is not set. On Vercel the filesystem is read-only, so add a Postgres "
+                                "database (Vercel Storage -> Neon) and set DATABASE_URL")
+            if not self.response_encryption_key:
+                problems.append("RESPONSE_ENCRYPTION_KEY is not set. Generate one with: python -c \"from "
+                                "cryptography.fernet import Fernet; print(Fernet.generate_key().decode())\"")
+        elif self.is_production:
             if not self.response_encryption_key:
                 problems.append("RESPONSE_ENCRYPTION_KEY is required in production")
             if self.public_base_url and not self.public_base_url.startswith("https://"):
@@ -180,7 +199,8 @@ def load_settings() -> Settings:
         llm_input_price_per_mtok=_env_float("LLM_INPUT_PRICE_PER_MTOK", 5.0),
         llm_output_price_per_mtok=_env_float("LLM_OUTPUT_PRICE_PER_MTOK", 25.0),
         cache_max_entries=_env_int("LLM_CACHE_MAX_ENTRIES", 5000),
-        database_url=_env("DATABASE_URL", f"sqlite:///{DATA_DIR / 'assessments.db'}") or "",
+        database_url=normalize_database_url(_env("DATABASE_URL", f"sqlite:///{DATA_DIR / 'assessments.db'}") or ""),
+        on_vercel=bool(_env("VERCEL")),
         response_encryption_key=_env("RESPONSE_ENCRYPTION_KEY"),
         admin_api_key=_env("ADMIN_API_KEY"),
         admin_setup_token=_env("ADMIN_SETUP_TOKEN"),
