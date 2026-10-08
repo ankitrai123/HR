@@ -203,7 +203,9 @@ export function EmployeesPage() {
   return (
     <>
       <PageHeader title="Employees" subtitle="Send each employee a personal assessment link and track their progress."
-        actions={<button className="btn btn-primary" onClick={() => setShowInvite((v) => !v)}><Plus size={16} /> Invite employees</button>} />
+        actions={showInvite
+          ? <button className="btn btn-outline" onClick={() => setShowInvite(false)}>Close form</button>
+          : <button className="btn btn-primary" onClick={() => setShowInvite(true)}><Plus size={16} /> Invite employees</button>} />
       {showInvite && <InvitePanel onCreated={() => void load()} />}
 
       <section className="card">

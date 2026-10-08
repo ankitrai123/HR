@@ -695,16 +695,16 @@ class HybridReportGenerator:
 
         parts = []
         if strengths:
-            parts.append(f"You show clear strengths in {join(strengths)}, which you can draw on at work.")
+            parts.append(f"Shows clear strengths in {join(strengths)}, which can be drawn on at work.")
         if development:
             verb = "is an area" if len(development) == 1 else "are areas"
             parts.append(f"{join(development)} {verb} where focused development would have the greatest impact.")
         moderate = total - len(strengths) - len(development)
         if moderate == total:
-            parts.append("Your profile is balanced, with every dimension in the moderate range of the comparison group.")
+            parts.append("The profile is balanced, with every dimension in the moderate range of the comparison group.")
         elif moderate:
             noun = "dimension sits" if moderate == 1 else "dimensions sit"
-            parts.append(f"Your remaining {moderate} {noun} in the moderate range of the comparison group.")
+            parts.append(f"The remaining {moderate} {noun} in the moderate range of the comparison group.")
         return " ".join(parts)
 
     # -- premium ----------------------------------------------------------
