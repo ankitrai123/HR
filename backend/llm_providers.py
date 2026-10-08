@@ -195,8 +195,8 @@ class AnthropicProvider(LLMProvider):
 
     @staticmethod
     def supports_effort(model: str) -> bool:
-        # Haiku 4.5 rejects the effort parameter.
-        return not model.startswith("claude-haiku")
+        # Haiku 4.5 rejects the effort parameter; Haiku 5.5 accepts it.
+        return not model.startswith("claude-haiku-4")
 
     @staticmethod
     def supports_server_fallback(model: str) -> bool:
@@ -222,7 +222,7 @@ class AnthropicProvider(LLMProvider):
         except anthropic.RateLimitError as exc:
             raise LLMUnavailable("Anthropic rate limit reached") from exc
         except anthropic.APIStatusError as exc:
-            raise LLMUnavailable(f"Anthropic API error {exc.status_code}") from exc
+            raise LLMUnavailable(f"Anthropic API error {exc.status_code}: {exc.message}") from exc
         except anthropic.APIConnectionError as exc:
             raise LLMUnavailable("could not reach the Anthropic API") from exc
 
